@@ -1,0 +1,296 @@
+// TRD Website Admin Panel - Prisma Schema
+// This schema defines all content models for the admin panel
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Services Model (6 services)
+model Service {
+  id           String    @id @default(cuid())
+  slug         String    @unique
+  title        String
+  tagline      String
+  description  String    @db.Text
+  features     String[]
+  benefits     String[]
+  icon         String
+  visual       String
+  heroImage    String?
+  featureImage String?
+  processImage String?
+  detailPage   String?
+  stats        Json?
+  process      Json?
+
+  // Phase 2 SEO fields
+  commonApplications  String?  @db.Text
+  whyChooseTRD        String?  @db.Text
+  serviceArea         String?  @db.Text
+  relatedServiceSlugs String[]
+  faqs                Json?
+  testimonials        Json?
+
+  // Admin fields
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+  metaTitle   String?
+  metaDescription String? @db.Text
+
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  projects Project[] @relation("ServiceProjects")
+
+  @@index([slug])
+  @@index([order])
+}
+
+// Projects Model (12 projects)
+model Project {
+  id              String   @id @default(cuid())
+  slug            String   @unique
+  name            String
+  location        String
+  date            String
+  serviceType     String
+  serviceId       String
+  service         Service  @relation("ServiceProjects", fields: [serviceId], references: [id])
+  categories      String[]
+  featuredImage   String
+  thumbnailImage  String
+  heroImage       String
+  tagline         String
+  challenge       String   @db.Text
+  solution        String   @db.Text
+  results         String   @db.Text
+  beforeImage     Json?
+  afterImage      Json?
+  galleryImages   Json?
+  stats           Json?
+  testimonial     Json?
+  timeline        String?
+  budget          String?
+
+  blurPlaceholders Json?
+
+  // Admin fields
+  order           Int      @default(0)
+  isActive        Boolean  @default(true)
+  metaTitle       String?
+  metaDescription String?  @db.Text
+
+  teamMembers     TeamMember[] @relation("ProjectTeam")
+  relatedProjects Project[]    @relation("RelatedProjects")
+  relatedTo       Project[]    @relation("RelatedProjects")
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@index([slug])
+  @@index([serviceId])
+  @@index([order])
+}
+
+// Team Members Model (3 members)
+model TeamMember {
+  id        String   @id @default(cuid())
+  name      String
+  title     String
+  roles     String[]
+  expertise String[]
+  bio         String   @db.Text
+  image       String
+  blurDataURL String?
+  expertiseLevels Json?
+  order       Int      @default(0)
+  linkedIn    String?
+  joinedYear  String?
+  projects    Project[] @relation("ProjectTeam")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([order])
+}
+
+// Company Values Model (8 values)
+model CompanyValue {
+  id          String   @id @default(cuid())
+  title       String
+  description String   @db.Text
+  image       String?
+  isText      Boolean  @default(true)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([order])
+}
+
+// Case Studies Model (3 case studies)
+model CaseStudy {
+  id        String   @id @default(cuid())
+  title     String
+  location  String
+  challenge String   @db.Text
+  solution  String[] @db.Text
+  result    String   @db.Text
+  metrics   Json?
+  images    Json?
+  visual    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Media Library for file management
+model Media {
+  id           String   @id @default(cuid())
+  filename     String
+  url          String
+  mimeType     String
+  size         Int
+  alt          String?
+  caption      String?
+  width        Int?
+  height       Int?
+  folder       String?
+  tags         String[]
+  // ImageKit-specific fields
+  imagekitId   String?     // ImageKit file ID for deletion/management
+  thumbnailUrl String?     // Auto-generated thumbnail URL
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([mimeType])
+  @@index([createdAt])
+  @@index([folder])
+  @@index([imagekitId])
+}
+
+// Site Settings (singleton)
+model SiteSettings {
+  id              String   @id @default("main")
+  contactEmail    String
+  contactPhone    String
+  contactAddress  String   @db.Text
+  businessHours   String
+  siteTitle       String
+  siteDescription String   @db.Text
+
+  // Extended fields
+  companyName       String?
+  companyFullName   String?
+  tagline           String?
+  subTagline        String?
+  valueProposition  String?
+  emergencyPhone1   String?
+  emergencyPhone2   String?
+  parentCompanyName String?
+  parentCompanyYear String?
+  socialLinkedIn    String?
+  socialFacebook    String?
+  socialInstagram   String?
+  ogImage           String?
+  twitterImage      String?
+  footerCta         String?  @db.Text
+  footerDescription String?  @db.Text
+  bannerText        String?
+  copyrightText     String?
+  navigationLinks   Json?    // [{label, href}]
+  featuredProjectIds Json?  // string[] of project IDs for case studies
+  geoLatitude       Float?
+  geoLongitude      Float?
+
+  updatedAt       DateTime @updatedAt
+}
+
+// Admin Users
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String
+  passwordHash String
+  role         String    @default("editor")
+  lastLogin    DateTime?
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([email])
+}
+
+// Page Content Model (Content Variable System)
+model PageContent {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       String   @db.Text
+  type        String   @default("text")
+  page        String
+  section     String
+  label       String
+  description String?
+  order       Int      @default(0)
+  version     Int      @default(1)
+  isDraft     Boolean  @default(false)
+  publishedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  history     ContentHistory[]
+
+  @@index([key])
+  @@index([page, section])
+  @@index([page, isDraft])
+}
+
+// Content Version History
+model ContentHistory {
+  id          String      @id @default(cuid())
+  contentId   String
+  content     PageContent @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  value       String      @db.Text
+  version     Int
+  changedBy   String?
+  changeNote  String?
+  createdAt   DateTime    @default(now())
+
+  @@index([contentId, version])
+  @@index([contentId, createdAt])
+}
+
+// FAQ Model
+model FAQ {
+  id          String   @id @default(cuid())
+  question    String
+  answer      String   @db.Text
+  category    String
+  keywords    String[]
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([category])
+  @@index([order])
+  @@index([isActive])
+}
+
+// Customer Testimonials
+model Testimonial {
+  id        String   @id @default(cuid())
+  quote     String   @db.Text
+  author    String
+  role      String
+  company   String?
+  isActive  Boolean  @default(true)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([order])
+  @@index([isActive])
+}

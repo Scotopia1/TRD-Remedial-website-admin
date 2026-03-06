@@ -1,0 +1,261 @@
+/* Emergency CTA - CGMWTMAR2025 Nico Palmer Pattern with TRD Branding */
+
+.emergency-cta {
+  padding: 2em;
+  display: flex;
+  flex-direction: column;
+  gap: 4em;
+  margin: 2em;
+  background-color: var(--trd-primary);
+  border-radius: 1em;
+  color: var(--trd-secondary);
+}
+
+.emergency-cta h3,
+.emergency-cta h4,
+.emergency-cta p,
+.emergency-cta .primary {
+  color: var(--trd-secondary);
+}
+
+/* =====================================================
+   ROW 1 - Info Bar
+   ===================================================== */
+
+.emergency-cta-row:nth-child(1) {
+  width: 100%;
+  display: flex;
+  gap: 1em;
+}
+
+.emergency-cta-row-copy-item {
+  flex: 1;
+}
+
+.emergency-cta-row-copy-item p {
+  font-family: "Messina Sans Mono", monospace;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--trd-accent);
+}
+
+.emergency-cta-row-copy-item:nth-child(2) {
+  text-align: center;
+}
+
+.emergency-cta-row-copy-item:nth-child(3) {
+  text-align: right;
+}
+
+/* =====================================================
+   ROW 2 - Main Content (2-Column)
+   ===================================================== */
+
+.emergency-cta-row:nth-child(2) {
+  display: flex;
+  gap: 1em;
+}
+
+.emergency-cta-col {
+  flex: 1;
+}
+
+/* Left Column */
+.emergency-cta-col:nth-child(1) {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5em;
+}
+
+.emergency-cta-header {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5em;
+}
+
+.emergency-cta-header h3 {
+  font-family: "Messina Sans", sans-serif;
+  font-size: 1.75rem;
+  line-height: 1.3;
+  font-weight: 600;
+  color: var(--trd-secondary);
+}
+
+.emergency-cta-header p {
+  font-family: "Messina Sans", sans-serif;
+  font-size: 1rem;
+  line-height: 1.6;
+  font-weight: 400;
+  color: var(--trd-secondary);
+  margin-bottom: 0.5em;
+  width: 90%;
+}
+
+.emergency-availability {
+  width: 75%;
+  display: flex;
+  justify-content: space-between;
+  gap: 1em;
+  border-top: 1px dashed var(--trd-secondary);
+  padding: 0.5em 0;
+}
+
+.emergency-availability p {
+  font-family: "Messina Sans Mono", monospace;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--trd-accent);
+}
+
+/* Right Column */
+.emergency-cta-col:nth-child(2) {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5em;
+}
+
+.emergency-contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75em;
+}
+
+.emergency-contact-info h4 {
+  font-family: "Messina Sans Mono", monospace;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--trd-accent);
+}
+
+.emergency-phone {
+  font-family: "Rader", sans-serif;
+  font-size: 1.75rem;
+  font-weight: 900;
+  color: var(--trd-secondary);
+  text-decoration: none;
+  transition: color 0.3s ease;
+  line-height: 1.2;
+}
+
+.emergency-phone:hover {
+  color: var(--trd-accent);
+}
+
+.emergency-email {
+  font-family: "Messina Sans", sans-serif;
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--trd-secondary);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.emergency-email:hover {
+  color: var(--trd-accent);
+}
+
+.emergency-cta-button {
+  margin-top: 1em;
+}
+
+.btn-emergency {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1rem 2rem;
+  width: 100%;
+  background-color: var(--trd-secondary);
+  color: var(--trd-primary);
+  font-family: "Messina Sans Mono", monospace;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  border-radius: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.btn-emergency:hover {
+  background-color: var(--trd-accent);
+  color: var(--trd-secondary);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(255, 255, 255, 0.2);
+}
+
+/* =====================================================
+   RESPONSIVE - MOBILE
+   ===================================================== */
+
+@media (max-width: 900px) {
+  .emergency-cta {
+    margin: 1.25em;
+  }
+
+  /* Row 1: Info Bar */
+  .emergency-cta-row:nth-child(1) {
+    flex-direction: column;
+    gap: 0.25em;
+  }
+
+  .emergency-cta-row-copy-item {
+    text-align: center;
+  }
+
+  .emergency-cta-row-copy-item:nth-child(3),
+  .emergency-cta h3,
+  .emergency-cta-header p {
+    text-align: center;
+  }
+
+  /* Row 2: Main Content */
+  .emergency-cta-row:nth-child(2) {
+    flex-direction: column;
+    gap: 4em;
+  }
+
+  .emergency-cta-header h3 {
+    font-size: 1.5rem;
+  }
+
+  .emergency-cta-header p,
+  .emergency-availability {
+    width: 100%;
+  }
+
+  .emergency-cta-col:nth-child(1) {
+    gap: 2em;
+  }
+
+  .emergency-availability {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.25em;
+  }
+
+  .emergency-phone {
+    font-size: 1.5rem;
+  }
+}
+
+/* =====================================================
+   ACCESSIBILITY - Reduced Motion
+   ===================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-emergency {
+    transition: none !important;
+    animation: none !important;
+  }
+
+  .btn-emergency:hover {
+    transform: none !important;
+  }
+}

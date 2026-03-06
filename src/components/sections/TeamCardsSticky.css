@@ -1,0 +1,252 @@
+/* Team Section - Desktop Animated Version */
+.team-arc-section.team-desktop {
+  position: relative;
+  width: 100%;
+  height: 100svh;
+  height: 100dvh;
+  min-height: 100svh;
+  min-height: 100dvh;
+  max-height: 100svh;
+  max-height: 100dvh;
+  overflow: hidden;
+  background-color: var(--concrete-900);
+}
+
+/* Section Title - Top left */
+.team-title {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 1.5rem;
+  z-index: 10;
+}
+
+.team-title h1 {
+  font-family: 'Rader', sans-serif;
+  font-size: clamp(2rem, 5vw, 4rem);
+  font-weight: 900;
+  line-height: 0.9;
+  letter-spacing: -0.05rem;
+  text-transform: uppercase;
+  color: var(--concrete-100);
+}
+
+/* Cards Container - Full viewport, allows overflow for animation */
+.cards {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+/* Individual Card - Absolute positioned for straight line animation */
+.card {
+  position: absolute;
+  width: 400px;
+  height: 550px;
+  left: 50%;
+  top: 50%;
+  margin-left: -200px;
+  margin-top: -275px;
+  transform-origin: center center;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  will-change: transform;
+  background-color: var(--trd-accent);
+  border-radius: 0.5rem;
+  overflow: hidden;
+  padding: 1rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  pointer-events: auto;
+  /* Initial state: hidden off-screen right until GSAP takes over.
+     Using visibility:hidden instead of CSS transform to avoid
+     conflicting with GSAP's matrix transform and causing a flash. */
+  visibility: hidden;
+  /* GPU compositing layer for smooth GSAP transform animations */
+  backface-visibility: hidden;
+}
+
+.card .card-img {
+  flex: 1;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background-color: rgba(0, 0, 0, 0.2);
+  /* GPU layer for glitch-free rendering during parent transform animation */
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+.card .card-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.card .card-content {
+  width: 100%;
+  height: auto;
+  padding: 0.5rem;
+}
+
+.card .card-content h3 {
+  font-family: 'Rader', sans-serif;
+  font-size: clamp(1.25rem, 3vw, 2rem);
+  font-weight: 700;
+  letter-spacing: -0.05rem;
+  line-height: 1.2;
+  margin-bottom: 0.5rem;
+  color: #fff;
+}
+
+.card .card-content p {
+  font-family: 'Messina Sans', sans-serif;
+  font-size: clamp(0.8rem, 1.5vw, 0.9rem);
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* Mobile static section */
+.team-arc-section.team-mobile {
+  position: relative;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  background-color: var(--concrete-900);
+  padding: 2rem 1rem;
+  display: none;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.mobile-header {
+  position: static;
+  width: 100%;
+  height: auto;
+  display: block;
+  will-change: auto;
+  margin-bottom: 0.5rem;
+}
+
+.mobile-header h1 {
+  margin: 0 0 0.5rem 0;
+  color: var(--concrete-100);
+  font-family: 'Rader', sans-serif;
+  font-size: 2.25rem;
+  font-weight: 900;
+  letter-spacing: -0.06rem;
+  line-height: 110%;
+  text-transform: uppercase;
+}
+
+.mobile-card {
+  position: relative;
+  width: 100%;
+  max-width: 680px;
+  margin: 0 auto;
+  background-color: var(--trd-accent);
+  border-radius: 1rem;
+  padding: 1rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.mobile-card .mobile-card-image {
+  width: 100%;
+  height: 240px;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  margin-bottom: 1rem;
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.mobile-card .mobile-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.mobile-card .mobile-card-content {
+  padding: 0.5rem;
+}
+
+.mobile-card .mobile-card-content h2 {
+  font-family: 'Rader', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.05rem;
+  line-height: 1.2;
+  margin-bottom: 1rem;
+  color: #fff;
+}
+
+.mobile-card .mobile-card-content p {
+  font-family: 'Messina Sans', sans-serif;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Mobile breakpoint - hide desktop, show mobile */
+@media (max-width: 999px) {
+  .team-arc-section.team-desktop {
+    display: none;
+  }
+
+  .team-arc-section.team-mobile {
+    display: flex;
+  }
+
+  /* Reset card state on mobile (they're in the mobile section anyway) */
+  .card {
+    transform: none;
+    visibility: visible;
+  }
+}
+
+/* Desktop breakpoint - show desktop, hide mobile */
+@media (min-width: 1000px) {
+  .team-arc-section.team-mobile {
+    display: none;
+  }
+
+  .team-arc-section.team-desktop {
+    display: block;
+  }
+}
+
+/* Tablet/smaller desktop adjustments */
+@media (max-width: 1400px) and (min-width: 1000px) {
+  .team-title {
+    padding: 1rem;
+  }
+
+  .team-title h1 {
+    font-size: clamp(1.75rem, 4vw, 3rem);
+  }
+
+  .card {
+    width: 350px;
+    height: 480px;
+    margin-left: -175px;
+    margin-top: -240px;
+  }
+}
+
+/* Short viewport adjustments */
+@media (max-height: 700px) and (min-width: 1000px) {
+  .card {
+    width: 320px;
+    height: 420px;
+    margin-left: -160px;
+    margin-top: -210px;
+  }
+
+  .team-title h1 {
+    font-size: clamp(1.5rem, 4vw, 2.5rem);
+  }
+}

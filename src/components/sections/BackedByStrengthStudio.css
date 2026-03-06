@@ -1,0 +1,285 @@
+/* Backed by Strength Studio - CGMWTJUNE2025 Wu Wei Pattern with TRD Branding */
+
+.backed-by-strength-studio {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background-color: var(--trd-secondary);
+  color: var(--trd-primary);
+}
+
+/* =====================================================
+   HERO IMAGE
+   ===================================================== */
+
+.strength-hero-img {
+  aspect-ratio: 7/5;
+  position: relative;
+  width: calc(100vw - 3rem);
+  margin: 4rem auto 0 auto;
+}
+
+.strength-hero-img-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform: translateY(-50%);
+  overflow: hidden;
+  border-radius: 1rem;
+}
+
+.strength-hero-img-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(100%) brightness(0.9) contrast(1.1);
+}
+
+/* =====================================================
+   COMPANY HEADER - Title + Mission Statement
+   ===================================================== */
+
+.strength-header {
+  width: 100%;
+  padding: 4rem 1.5rem 10rem 1.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  background-color: var(--trd-secondary);
+}
+
+.strength-header-copy {
+  width: 60%;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.strength-title {
+  font-family: "Rader", sans-serif;
+  font-size: 3rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  color: var(--trd-primary);
+  line-height: 1;
+}
+
+.strength-header-copy h2 {
+  font-family: "Messina Sans", sans-serif;
+  font-size: 1.5rem;
+  line-height: 1.6;
+  font-weight: 400;
+  color: var(--trd-primary);
+}
+
+/* =====================================================
+   MISSION INTRO - Dark Inversion Section
+   ===================================================== */
+
+.mission-intro {
+  position: relative;
+  width: 100vw;
+  height: 100svh;
+  height: 100dvh;
+  padding: 1.5rem;
+  background-color: var(--trd-primary);
+  color: var(--trd-secondary);
+  display: flex;
+  align-items: center;
+  gap: 3rem;
+}
+
+.mission-intro-col-sm {
+  flex: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  height: 100%; /* Ensure full height of parent */
+  min-height: 600px; /* Minimum height for consistent display */
+}
+
+.mission-intro-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Cover the frame while maintaining aspect ratio */
+  object-position: center; /* Center the image in the frame */
+  filter: grayscale(100%) brightness(0.9) contrast(1.1);
+}
+
+.mission-intro-col-lg {
+  flex: 4;
+}
+
+.mission-intro-copy {
+  width: 75%;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.mission-intro-copy h3 {
+  font-family: "Messina Sans", sans-serif;
+  font-size: 1.25rem;
+  line-height: 1.7;
+  font-weight: 400;
+  color: var(--trd-secondary);
+}
+
+.mission-link {
+  margin-top: 4.5rem;
+  will-change: transform, opacity;
+}
+
+.btn-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 2rem;
+  background-color: var(--trd-secondary);
+  color: var(--trd-primary);
+  font-family: "Messina Sans Mono", monospace;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  border-radius: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.btn-link:hover {
+  background-color: var(--trd-accent);
+  color: var(--trd-secondary);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.btn-link svg {
+  transition: transform 0.3s ease;
+}
+
+.btn-link:hover svg {
+  transform: translateX(4px);
+}
+
+/* =====================================================
+   RECOGNITION - Centered Credentials
+   ===================================================== */
+
+.recognition {
+  position: relative;
+  width: 100%;
+  height: 100svh;
+  height: 100dvh;
+  padding: 1.5rem;
+  background-color: var(--trd-secondary);
+  color: var(--trd-primary);
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.recognition-copy {
+  width: 60%;
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+
+.recognition-copy p.sm {
+  font-family: "Messina Sans Mono", monospace;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--trd-accent);
+}
+
+.recognition-copy h2 {
+  font-family: "Messina Sans", sans-serif;
+  font-size: 1.75rem;
+  line-height: 1.5;
+  font-weight: 400;
+  color: var(--trd-primary);
+}
+
+.caps {
+  text-transform: uppercase;
+}
+
+/* =====================================================
+   RESPONSIVE - MOBILE
+   ===================================================== */
+
+@media (max-width: 1000px) {
+  /* Company Header */
+  .strength-header {
+    padding: 3rem 1.5rem 8rem 1.5rem;
+  }
+
+  .strength-header-copy {
+    width: 100%;
+    gap: 1.5rem;
+  }
+
+  .strength-title {
+    font-size: 2rem;
+  }
+
+  .strength-header-copy h2 {
+    font-size: 1.25rem;
+  }
+
+  /* Mission Intro */
+  .mission-intro {
+    min-height: 100svh;
+    min-height: 100dvh;
+    height: 100%;
+  }
+
+  .mission-intro-col-sm {
+    display: none;
+  }
+
+  .mission-intro-copy {
+    width: 100%;
+  }
+
+  .mission-intro-copy h3 {
+    font-size: 1.125rem;
+  }
+
+  .mission-link {
+    margin-top: 3rem;
+  }
+
+  /* Recognition */
+  .recognition-copy {
+    width: 100%;
+  }
+
+  .recognition-copy h2 {
+    font-size: 1.5rem;
+  }
+}
+
+/* =====================================================
+   ACCESSIBILITY - Reduced Motion
+   ===================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .mission-link,
+  .btn-link {
+    transition: none !important;
+    animation: none !important;
+  }
+
+  .btn-link:hover svg {
+    transform: none !important;
+  }
+}

@@ -1,0 +1,787 @@
+@import "tailwindcss";
+@import "./fonts.css";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+
+  /* CGMWTMAR2025 Variables - Grayscale Version */
+  --bg: #e0e0e0;        /* Off-white (grayscale version of #e3e3db) */
+  --bg200: rgba(224, 224, 224, 0.25);
+  --fg: #0f0f0f;        /* Near-black */
+  --fg200: #1f1f1f;     /* Slightly lighter black */
+
+  /* TRD Brand Colors - Pure Grayscale */
+  --trd-primary: #1a1a1a;
+  --trd-secondary: #f5f5f5;
+  --trd-accent: #424242;
+  --trd-accent-hover: #303030;
+
+  /* Concrete Palette */
+  --concrete-50: #f8f9fa;
+  --concrete-100: #e9ecef;
+  --concrete-200: #dee2e6;
+  --concrete-300: #ced4da;
+  --concrete-400: #adb5bd;
+  --concrete-500: #6c757d;
+  --concrete-600: #495057;
+  --concrete-700: #343a40;
+  --concrete-800: #212529;
+  --concrete-900: #0a0c0d;
+
+  /* Industrial Palette */
+  --industrial-50: #f5f5f5;
+  --industrial-100: #e0e0e0;
+  --industrial-200: #bdbdbd;
+  --industrial-300: #9e9e9e;
+  --industrial-400: #757575;
+  --industrial-500: #616161;
+  --industrial-600: #424242;
+  --industrial-700: #303030;
+  --industrial-800: #212121;
+  --industrial-900: #121212;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: "Messina Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Messina Sans Mono", ui-monospace, monospace;
+
+  /* TRD Custom Colors */
+  --color-trd-primary: var(--trd-primary);
+  --color-trd-secondary: var(--trd-secondary);
+  --color-trd-accent: var(--trd-accent);
+
+  /* Concrete Colors */
+  --color-concrete-50: var(--concrete-50);
+  --color-concrete-100: var(--concrete-100);
+  --color-concrete-200: var(--concrete-200);
+  --color-concrete-300: var(--concrete-300);
+  --color-concrete-400: var(--concrete-400);
+  --color-concrete-500: var(--concrete-500);
+  --color-concrete-600: var(--concrete-600);
+  --color-concrete-700: var(--concrete-700);
+  --color-concrete-800: var(--concrete-800);
+  --color-concrete-900: var(--concrete-900);
+
+  /* Industrial Colors */
+  --color-industrial-50: var(--industrial-50);
+  --color-industrial-100: var(--industrial-100);
+  --color-industrial-200: var(--industrial-200);
+  --color-industrial-300: var(--industrial-300);
+  --color-industrial-400: var(--industrial-400);
+  --color-industrial-500: var(--industrial-500);
+  --color-industrial-600: var(--industrial-600);
+  --color-industrial-700: var(--industrial-700);
+  --color-industrial-800: var(--industrial-800);
+  --color-industrial-900: var(--industrial-900);
+
+  /* Custom Animations */
+  --animation-fade-in: fadeIn 0.3s ease-in;
+  --animation-slide-up: slideUp 0.5s ease-out;
+  --animation-slide-down: slideDown 0.5s ease-out;
+  --animation-scale-in: scaleIn 0.3s ease-out;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+/* =====================================================
+   BASE LAYER - Site global styles wrapped in @layer base
+   so Tailwind utility classes can override them properly.
+   CSS outside @layer has higher cascade priority than
+   @layer utilities, which breaks Tailwind class application.
+   ===================================================== */
+@layer base {
+  /* Hide Scrollbars (keep functionality) */
+  * {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+  }
+
+  *::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+  }
+
+  /* MOBILE FIX: Don't set overflow on html/body globally - causes scroll issues on iOS */
+  /* Only hide scrollbars, don't restrict overflow */
+  html {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  body {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    /* overflow-x: hidden removed - was blocking scroll on mobile */
+  }
+
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* iOS Optimizations - Native Momentum Scrolling & Hardware Acceleration */
+  /* NOTE: Aggressive CSS containment removed - was breaking layouts and positioning */
+  @supports (-webkit-touch-callout: none) {
+    html {
+      /* iOS scrolling fix: Ensure smooth momentum scrolling */
+      scroll-behavior: auto; /* Let iOS handle smooth scrolling natively */
+      /* GPU promotion (translateZ, perspective, backface-visibility) REMOVED from root elements
+         — was promoting entire page to multiple GPU layers, causing memory pressure on mobile */
+    }
+
+    body {
+      /* iOS scrolling fix: Improve touch responsiveness */
+      /* translate3d(0,0,0) REMOVED — redundant GPU promotion on body element */
+    }
+
+    /* Optimize touch event handling - prevent delay */
+    * {
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+    }
+
+    /* Interactive elements should respond immediately */
+    a, button, [role="button"], [tabindex]:not([tabindex="-1"]) {
+      touch-action: manipulation; /* Prevents double-tap zoom delay */
+      cursor: pointer;
+    }
+
+    /* Improve scrolling performance */
+    [data-scroll-section], section, main {
+      will-change: auto;
+    }
+  }
+
+  /* Disable smooth scroll during drag operations */
+  html.is-dragging {
+    scroll-behavior: auto !important;
+  }
+
+  /* Base Styles - CGMWTMAR2025 Typography */
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: "Messina Sans", sans-serif;
+    background-color: var(--bg);
+    color: var(--fg);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+
+    /* iOS/Android Touch Optimization */
+    touch-action: pan-y pinch-zoom; /* Allow pinch zoom but maintain vertical scrolling */
+
+    /* iOS fix: Allow overscroll on body to prevent scroll lockup */
+    overscroll-behavior-y: contain; /* Prevent full-page bounce but allow scroll */
+  }
+
+  /* =====================================================
+     SMOOTH SCROLLING - Handled by Lenis
+     ===================================================== */
+  html {
+    /* scroll-behavior: smooth; -- REMOVED: Lenis handles smooth scrolling */
+    /* touch-action and overscroll-behavior handled on body only */
+  }
+
+  /* Reduced motion preference */
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+
+  /* =====================================================
+     MOBILE SCROLL FIXES - iOS & Android
+     ===================================================== */
+
+  /* Prevent iOS rubber-banding/bounce - Safe optimizations only */
+  @supports (-webkit-touch-callout: none) {
+    /* NOTE: Universal hardware acceleration removed - was causing GPU memory pressure */
+    /* Hardware acceleration now applied selectively to animated elements only */
+    /* -webkit-overflow-scrolling: touch REMOVED - deprecated since iOS 13 */
+    /* translateZ(0) and backface-visibility REMOVED - GSAP handles GPU promotion on-demand */
+
+    /* Optimize images for iOS scrolling performance */
+    img {
+      image-rendering: -webkit-optimize-contrast;
+    }
+
+    /* Optimize video elements for iOS */
+    video {
+      object-fit: cover;
+    }
+  }
+
+  /* Android scroll optimization */
+  @supports not (-webkit-touch-callout: none) {
+    html, body {
+      scroll-behavior: smooth;
+      overscroll-behavior-y: contain;
+    }
+  }
+
+  /* Prevent text selection during scroll on mobile */
+  @media (hover: none) and (pointer: coarse) {
+    * {
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+    }
+
+    /* Allow text selection on inputs */
+    input, textarea, [contenteditable] {
+      -webkit-touch-callout: default;
+      -webkit-user-select: text;
+      user-select: text;
+    }
+  }
+
+  /* Fix position:fixed flickering on iOS */
+  @supports (-webkit-touch-callout: none) {
+    .fixed-element {
+      -webkit-transform: translateZ(0);
+      transform: translateZ(0);
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+    }
+  }
+
+  /* Smooth momentum scrolling for scrollable containers */
+  .scroll-container {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    scroll-behavior: smooth;
+  }
+
+  /* Prevent scroll chaining on nested scrollable elements */
+  .scroll-prevent {
+    overscroll-behavior: contain;
+  }
+
+  img {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Typography System - CGMWTMAR2025 */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5 {
+    text-transform: uppercase;
+    font-family: "Rader", sans-serif;
+  }
+
+  h1 {
+    font-size: 8vw;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 6.4vw;
+  }
+
+  h2 {
+    font-size: 5vw;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 4vw;
+  }
+
+  h3 {
+    font-size: 4vw;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 3.4vw;
+  }
+
+  h4 {
+    font-size: 2vw;
+    font-weight: 600;
+    letter-spacing: -0.005em;
+    line-height: 2vw;
+  }
+
+  h5 {
+    font-size: 1.25rem;
+  }
+
+  p {
+    font-family: "Messina Sans";
+    font-size: 1rem;
+    font-weight: 600;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  p.primary {
+    text-transform: uppercase;
+    font-family: "Messina Sans Mono";
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  p.secondary {
+    font-family: "Messina Sans";
+    font-size: 1rem;
+    font-weight: 600;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  p.primary.sm {
+    text-transform: uppercase;
+    font-family: "Messina Sans Mono";
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  p.secondary.sm {
+    font-family: "Messina Sans";
+    font-size: 0.8rem;
+    font-weight: 600;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a {
+    display: block;
+    text-decoration: none;
+    text-transform: uppercase;
+    color: var(--fg);
+    font-family: "Messina Sans Mono";
+    font-size: 0.8rem;
+    font-weight: 600;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  button {
+    outline: none;
+    border: none;
+  }
+
+  input,
+  textarea,
+  input:active,
+  input:focus,
+  textarea:active,
+  textarea:focus {
+    border: none;
+    outline: none;
+    width: 100%;
+    padding: 1em;
+    font-family: "Messina Sans";
+    font-size: 1rem;
+    font-weight: 600;
+    -webkit-font-smoothing: antialiased;
+    border-radius: 0.5rem;
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    font-family: "Messina Sans";
+    font-size: 1rem;
+    font-weight: 600;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Mobile Typography - CGMWTMAR2025 */
+  @media (max-width: 1000px) {
+    h1 {
+      font-size: 14vw;
+      line-height: 12vw;
+    }
+
+    h2 {
+      font-size: 10vw;
+      line-height: 8vw;
+    }
+
+    h3 {
+      font-size: 8vw;
+      line-height: 7vw;
+    }
+
+    h4 {
+      font-size: 6vw;
+      line-height: 6vw;
+    }
+  }
+
+  /* Lenis handles smooth scrolling via ReactLenis provider (CGMWTAUG2025 pattern) */
+
+  /* Hardware acceleration for smooth scrolling */
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Accessibility - Focus Visible Styles */
+  /* Enhanced focus indicators for keyboard navigation */
+  *:focus-visible {
+    outline: 2px solid #424242;
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Remove outline for mouse/touch interactions */
+  *:focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  /* Button focus styles */
+  button:focus-visible,
+  a:focus-visible {
+    outline: 2px solid #424242;
+    outline-offset: 2px;
+  }
+
+  /* Input focus styles */
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    outline: 2px solid #424242;
+    outline-offset: 2px;
+    border-color: #424242;
+  }
+
+  /* Keyboard navigation indicator */
+  body.keyboard-nav *:focus {
+    outline: 2px solid #424242 !important;
+    outline-offset: 2px !important;
+  }
+} /* end @layer base */
+
+/* Custom Keyframes - outside layer (keyframes don't participate in cascade) */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Utility Classes - in @layer utilities so they work alongside Tailwind */
+@layer utilities {
+  .btn {
+    text-decoration: none;
+    text-transform: uppercase;
+    display: block;
+    width: max-content;
+    padding: 1em 2em;
+    font-family: "Messina Sans Mono";
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    border-radius: 0.4em;
+    background-color: var(--fg);
+    color: var(--bg);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* 3D Transform Utilities for Flip Cards */
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
+
+  .backface-hidden {
+    backface-visibility: hidden;
+  }
+
+  .rotate-y-180 {
+    transform: rotateY(180deg);
+  }
+
+  /* Performance Optimizations - will-change */
+  .will-change-transform {
+    will-change: transform;
+  }
+
+  .will-change-opacity {
+    will-change: opacity;
+  }
+
+  .will-change-transform-opacity {
+    will-change: transform, opacity;
+  }
+
+  /* Skip to content link */
+  .skip-to-content {
+    position: absolute;
+    top: -48px;
+    left: 16px;
+    background: #424242;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    z-index: 9999;
+    transition: top 0.2s ease-in-out;
+  }
+
+  .skip-to-content:focus {
+    top: 16px;
+  }
+
+  /* Screen reader only text */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+}
+
+/* Apply to commonly animated elements - outside layer to maintain performance hint specificity */
+[data-magnetic],
+[data-cursor],
+.team-member-image-container,
+.marquee-content,
+.service-card,
+.case-study-card {
+  will-change: transform;
+}
+
+/* Remove will-change after animation completes to free up resources */
+@media (hover: hover) {
+  [data-magnetic]:not(:hover),
+  .team-member-image-container:not(:hover) {
+    will-change: auto;
+  }
+}
+
+/* Reset will-change on touch devices where hover never fires */
+@media (hover: none) and (pointer: coarse) {
+  [data-magnetic],
+  [data-cursor],
+  .team-member-image-container,
+  .marquee-content,
+  .service-card,
+  .case-study-card {
+    will-change: auto;
+  }
+}
+
+/* Accessibility - Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Disable GSAP animations */
+  [data-gsap] {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  /* Disable transform animations */
+  .perspective-1000,
+  .preserve-3d {
+    transform: none !important;
+  }
+}
+
+/* Custom Cursor - CGMWTDEC2024 "Origin" Style */
+.cursor {
+  position: fixed;
+  width: 100px;
+  height: 100px;
+  border-radius: 100%;
+  background-color: var(--trd-secondary); /* Light circle */
+  will-change: transform;
+  pointer-events: none;
+  z-index: 1000;
+  transform-origin: center;
+  margin-left: -50px;
+  margin-top: -50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: var(--trd-primary); /* Dark icon */
+}
+
+.cursor-icon {
+  transform-origin: center;
+  will-change: transform;
+}
+
+@media (max-width: 900px) {
+  .cursor {
+    display: none !important;
+  }
+}
+
+/* ========================================
+   Page Transition Grid (CGMWTDEC2025 Style)
+   ======================================== */
+.transition-grid {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100svh;
+  height: 100dvh;
+  pointer-events: none;
+  z-index: 9999;
+  overflow: hidden;
+}
+
+.transition-block {
+  position: absolute;
+  top: 0;
+  background-color: #1a1a1a; /* TRD primary dark color */
+  transform-origin: left;
+}
+
+/* ========================================
+   ADMIN DASHBOARD STYLE RESET
+   Placed in @layer base so Tailwind utility classes (in @layer utilities)
+   can override these reset styles when needed (e.g., bg-white on a button).
+   Within @layer base, .admin-layout selectors win over bare element selectors
+   due to higher specificity — so the reset still works against site base styles.
+   ======================================== */
+@layer base {
+  .admin-layout {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #fafafa;
+    color: #1a1a1a;
+  }
+
+  .admin-layout * {
+    scrollbar-width: thin;
+  }
+
+  .admin-layout *::-webkit-scrollbar {
+    display: block;
+    width: 6px;
+    height: 6px;
+  }
+
+  .admin-layout *::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 3px;
+  }
+
+  .admin-layout h1,
+  .admin-layout h2,
+  .admin-layout h3,
+  .admin-layout h4,
+  .admin-layout h5 {
+    text-transform: none;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: inherit;
+    font-weight: inherit;
+    letter-spacing: normal;
+    line-height: normal;
+  }
+
+  .admin-layout p {
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: inherit;
+    font-weight: normal;
+  }
+
+  .admin-layout a {
+    display: inline;
+    text-decoration: none;
+    text-transform: none;
+    color: inherit;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: inherit;
+    font-weight: inherit;
+  }
+
+  .admin-layout button {
+    font-family: system-ui, -apple-system, sans-serif;
+    cursor: pointer;
+    background: none;
+  }
+
+  .admin-layout input,
+  .admin-layout textarea,
+  .admin-layout select {
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 0.875rem;
+    font-weight: 400;
+    padding: 0;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    background-color: white;
+  }
+
+  .admin-layout input:focus,
+  .admin-layout textarea:focus,
+  .admin-layout select:focus {
+    border-color: #9ca3af;
+    outline: none;
+  }
+
+  .admin-layout img {
+    position: static;
+    width: auto;
+    height: auto;
+    object-fit: initial;
+  }
+}

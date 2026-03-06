@@ -1,0 +1,126 @@
+# ============================================
+# TRD Admin Dashboard - .gitignore
+# ============================================
+
+# Dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# Next.js
+/.next/
+/out/
+
+# Production
+/build
+/dist
+
+# Environment & Secrets
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env*.local
+
+# Vercel
+.vercel
+
+# TypeScript build artifacts
+*.tsbuildinfo
+next-env.d.ts
+
+# Prisma generated client
+/src/generated/prisma
+
+# Testing
+/coverage
+/test-results/
+/tests/
+playwright-report/
+playwright/.cache/
+*.spec.ts.snap
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# IDE & Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# OS Files
+.DS_Store
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# Temp & Backup files
+*.tmp
+*.temp
+*.bak
+*.backup
+*.old
+nul
+_nul
+*.stackdump
+tmpclaude-*
+cookies.txt
+tmp/
+tmp-*
+
+# Certificates
+*.pem
+*.key
+*.cert
+*.crt
+
+# Test & Debug files
+test-*.ts
+test-*.js
+test-*.mjs
+api-manual-tests.http
+
+# Performance traces & reports
+*.json.gz
+baseline-*.json
+
+# Documentation (generated/planning)
+/docs/
+COMPONENT_LIBRARY_REFERENCE.md
+HOMEPAGE_REDESIGN_PLAN.md
+IMPLEMENTATION_SUMMARY.md
+MISSING_ASSETS.md
+PHASE_*.md
+TESTING_CHECKLIST.md
+
+# Scripts (dev utilities, not needed in prod)
+/scripts/
+analyze-bundle*.ps1
+
+# Claude & Sisyphus tooling
+.claude/
+.sisyphus/
+
+# Misc
+.turbo
+.contentlayer
+server.log
+dev.log

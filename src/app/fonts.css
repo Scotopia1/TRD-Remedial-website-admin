@@ -1,0 +1,98 @@
+/* Rader Font Family - Display Font for Headings */
+@font-face {
+  font-family: "Rader";
+  src: url("/fonts/rader/PPRader-Bold.woff2") format("woff2");
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Rader";
+  src: url("/fonts/rader/PPRader-Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Rader";
+  src: url("/fonts/rader/PPRader-Regular.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Messina Sans Font Family - Body Font */
+@font-face {
+  font-family: "Messina Sans";
+  src: url("/fonts/messina-sans/MessinaSans-Black.woff2") format("woff2");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Messina Sans";
+  src: url("/fonts/messina-sans/MessinaSans-Bold.woff2") format("woff2");
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Messina Sans";
+  src: url("/fonts/messina-sans/MessinaSans-Light.woff2") format("woff2");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Messina Sans";
+  src: url("/fonts/messina-sans/MessinaSans-Regular.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Messina Sans";
+  src: url("/fonts/messina-sans/MessinaSans-SemiBold.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Messina Sans Mono Font Family - Monospace for Decorative Text */
+@font-face {
+  font-family: "Messina Sans Mono";
+  src: url("/fonts/messina-sans-mono/MessinaSansMono-Black.woff2") format("woff2");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Messina Sans Mono";
+  src: url("/fonts/messina-sans-mono/MessinaSansMono-Light.woff2") format("woff2");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Messina Sans Mono";
+  src: url("/fonts/messina-sans-mono/MessinaSansMono-Regular.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Messina Sans Mono";
+  src: url("/fonts/messina-sans-mono/MessinaSansMono-SemiBold.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}

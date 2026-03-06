@@ -1,0 +1,167 @@
+.contact-page {
+  width: 100%;
+  min-height: 100svh;
+  background-color: var(--concrete-900);
+  color: var(--concrete-100);
+}
+
+.contact-hero {
+  min-height: 90svh;
+  display: flex;
+  align-items: center;
+  padding: 4rem 2rem;
+}
+
+.contact-hero-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 4fr 1fr;
+  gap: 4rem;
+}
+
+.contact-hero-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.contact-heading {
+  font-family: 'Rader', sans-serif;
+  font-size: clamp(4rem, 10vw, 8rem);
+  font-weight: 900;
+  line-height: 0.9;
+  text-transform: uppercase;
+  color: var(--concrete-100);
+}
+
+.contact-year {
+  font-family: 'Rader', sans-serif;
+  font-size: 20vw;
+  font-weight: 900;
+  line-height: 0.8;
+  color: var(--concrete-800);
+  user-select: none;
+}
+
+.contact-hero-right {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+
+.contact-info-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.contact-label {
+  font-family: 'Messina Sans Mono', monospace;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--concrete-400);
+}
+
+.contact-value {
+  font-family: 'Messina Sans', sans-serif;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--concrete-100);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.contact-value:hover {
+  color: var(--trd-accent);
+}
+
+.contact-cta {
+  padding: 6rem 2rem;
+  text-align: center;
+  background-color: var(--concrete-800);
+}
+
+.contact-cta-text {
+  font-family: 'Messina Sans', sans-serif;
+  font-size: 1.5rem;
+  color: var(--concrete-200);
+  margin-bottom: 3rem;
+}
+
+.contact-cta-buttons {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.contact-cta-button {
+  padding: 1.25rem 2.5rem;
+  font-family: 'Messina Sans', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--concrete-900);
+  background-color: var(--trd-accent);
+  border-radius: 0.5rem;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.contact-cta-button:hover {
+  background-color: var(--trd-secondary);
+  color: var(--trd-primary);
+  transform: translateY(-2px);
+}
+
+.contact-cta-button-secondary {
+  background-color: transparent;
+  color: var(--concrete-100);
+  border: 2px solid var(--concrete-300);
+}
+
+.contact-cta-button-secondary:hover {
+  background-color: var(--concrete-300);
+  color: var(--concrete-900);
+}
+
+@media (max-width: 1000px) {
+  .contact-hero-content {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+
+  .contact-heading {
+    font-size: clamp(3rem, 12vw, 6rem);
+  }
+
+  .contact-year {
+    font-size: 25vw;
+  }
+
+  .contact-hero-right {
+    max-width: 600px;
+  }
+}
+
+@media (max-width: 640px) {
+  .contact-hero {
+    padding: 3rem 1.5rem;
+  }
+
+  .contact-cta {
+    padding: 4rem 1.5rem;
+  }
+
+  .contact-cta-buttons {
+    flex-direction: column;
+  }
+
+  .contact-cta-button {
+    width: 100%;
+  }
+}

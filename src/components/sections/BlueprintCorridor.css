@@ -1,0 +1,469 @@
+/* ============================================================
+   Blueprint Corridor - Horizontal Scroll Process Section
+   Design 2 from our-process-designs.md
+   ============================================================ */
+
+/* === SECTION WRAPPER === */
+.corridor-section {
+  position: relative;
+  width: 100vw;
+  background: var(--concrete-900);
+  overflow: hidden;
+}
+
+/* === SECTION HEADER (above the pinned corridor) === */
+.corridor-header {
+  width: 80%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-bottom: 3rem;
+}
+
+.corridor-header-title {
+  font-family: "Rader", sans-serif;
+  font-size: 2.5rem;
+  font-weight: 700;
+  line-height: 1.1;
+  text-transform: uppercase;
+  color: var(--concrete-100);
+  margin-bottom: 0;
+}
+
+/* === PINNED FRAME (100vh viewport) === */
+.corridor-frame {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* === TOP RAIL === */
+.corridor-rail {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: rgba(10, 12, 13, 0.95);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.corridor-rail-inner {
+  display: flex;
+  align-items: center;
+  padding: 0 5%;
+  gap: 0;
+  height: 100%;
+}
+
+.corridor-rail-step {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 0 1rem;
+  font-family: "Messina Sans Mono", monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--concrete-500);
+  cursor: pointer;
+  transition: color 0.3s ease;
+  border-bottom: 2px solid transparent;
+  user-select: none;
+  white-space: nowrap;
+  position: relative;
+  background: none;
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  outline: none;
+}
+
+.corridor-rail-step:hover {
+  color: var(--concrete-300);
+}
+
+.corridor-rail-step.active {
+  color: var(--concrete-100);
+  border-bottom-color: var(--concrete-100);
+}
+
+/* Rail progress bar */
+.corridor-rail-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.corridor-rail-progress-fill {
+  height: 100%;
+  background: var(--concrete-400);
+  transform-origin: left;
+  transform: scaleX(0);
+  will-change: transform;
+}
+
+/* === HORIZONTAL PANELS CONTAINER === */
+.corridor-panels {
+  display: flex;
+  height: 100%;
+  will-change: transform;
+}
+
+/* === SINGLE PANEL (100vw each) === */
+.corridor-panel {
+  flex: 0 0 100vw;
+  width: 100vw;
+  height: 100vh;
+  display: grid;
+  grid-template-columns: 50% 50%;
+  position: relative;
+  padding-top: 60px; /* space for rail */
+}
+
+/* === IMAGE SIDE (left 50%) === */
+.corridor-panel-image {
+  position: relative;
+  overflow: hidden;
+  height: calc(100vh - 60px);
+}
+
+.corridor-panel-image img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  filter: grayscale(100%) brightness(0.8) contrast(1.15);
+  will-change: transform;
+}
+
+/* Inner edge border on image */
+.corridor-panel-image::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.06);
+  z-index: 2;
+}
+
+/* === BLUEPRINT GRID OVERLAY (center seam) === */
+.corridor-blueprint-grid {
+  position: absolute;
+  top: 60px;
+  left: calc(50% - 60px);
+  width: 120px;
+  height: calc(100vh - 60px);
+  z-index: 5;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.corridor-blueprint-svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* Grid line draw-in animation base */
+.corridor-blueprint-svg line,
+.corridor-blueprint-svg circle {
+  will-change: stroke-dashoffset, opacity;
+}
+
+/* === CONTENT SIDE (right 50%) === */
+.corridor-panel-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 4rem 5% 4rem 5%;
+  height: calc(100vh - 60px);
+  position: relative;
+}
+
+.corridor-step-label {
+  font-family: "Messina Sans Mono", monospace;
+  font-size: 0.875rem;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--concrete-400);
+  margin-bottom: 1.25rem;
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+.corridor-step-title {
+  font-family: "Rader", sans-serif;
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--concrete-100);
+  line-height: 1.05;
+  margin-bottom: 1.75rem;
+  letter-spacing: -0.02em;
+  opacity: 0;
+  transform: translateY(50px);
+}
+
+.corridor-step-description {
+  font-family: "Messina Sans", sans-serif;
+  font-size: 1.125rem;
+  font-weight: 400;
+  line-height: 1.7;
+  color: var(--concrete-300);
+  max-width: 500px;
+  margin-bottom: 2.5rem;
+  opacity: 0;
+  transform: translateY(40px);
+}
+
+/* Thin rule above next link */
+.corridor-step-rule {
+  width: 60px;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  margin-bottom: 1.5rem;
+  opacity: 0;
+}
+
+.corridor-step-next {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: "Messina Sans Mono", monospace;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--concrete-400);
+  cursor: pointer;
+  transition: color 0.3s ease, gap 0.3s ease;
+  opacity: 0;
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+.corridor-step-next:hover {
+  color: var(--concrete-100);
+  gap: 0.75rem;
+}
+
+.corridor-step-next-arrow {
+  transition: transform 0.3s ease;
+}
+
+.corridor-step-next:hover .corridor-step-next-arrow {
+  transform: translateX(3px);
+}
+
+/* === BOTTOM COUNTER === */
+.corridor-counter {
+  position: absolute;
+  bottom: 2rem;
+  right: 5%;
+  font-family: "Messina Sans Mono", monospace;
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: var(--concrete-400);
+  z-index: 10;
+  letter-spacing: 0.05em;
+}
+
+/* === DIMMED PANEL (as it scrolls out) === */
+.corridor-panel.dimmed .corridor-panel-content {
+  opacity: 0.3;
+  transition: opacity 0.3s ease;
+}
+
+.corridor-panel.dimmed .corridor-panel-image img {
+  transform: scale(0.95);
+  transition: transform 0.3s ease;
+}
+
+/* ============================================================
+   MOBILE LAYOUT (<=900px) - Vertical stack, no horizontal scroll
+   ============================================================ */
+@media (max-width: 900px) {
+  .corridor-section {
+    overflow: visible;
+  }
+
+  .corridor-header {
+    width: 100%;
+    padding: 0 8% 2rem;
+  }
+
+  .corridor-header-title {
+    font-size: 2rem;
+  }
+
+  /* Hide desktop frame */
+  .corridor-frame {
+    height: auto;
+    overflow: visible;
+  }
+
+  /* Rail simplification: horizontal dots */
+  .corridor-rail {
+    position: relative;
+    height: auto;
+    padding: 1rem 8%;
+    background: transparent;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .corridor-rail-inner {
+    padding: 0;
+    justify-content: flex-start;
+    gap: 1.25rem;
+    height: auto;
+  }
+
+  .corridor-rail-step {
+    flex: 0 0 auto;
+    height: auto;
+    padding: 0.25rem 0;
+    font-size: 0.6875rem;
+    border-bottom: none;
+  }
+
+  .corridor-rail-step.active {
+    border-bottom: none;
+  }
+
+  .corridor-rail-progress {
+    position: relative;
+    margin-top: 0.25rem;
+  }
+
+  /* Panels stack vertically */
+  .corridor-panels {
+    flex-direction: column;
+  }
+
+  .corridor-panel {
+    flex: 0 0 auto;
+    width: 100%;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    padding-top: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .corridor-panel:last-child {
+    border-bottom: none;
+  }
+
+  /* Only show image on first panel */
+  .corridor-panel-image {
+    height: auto;
+    display: none;
+  }
+
+  .corridor-panel:first-child .corridor-panel-image {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    height: auto;
+  }
+
+  /* Hide blueprint grid on mobile */
+  .corridor-blueprint-grid {
+    display: none;
+  }
+
+  /* Content styling for mobile */
+  .corridor-panel-content {
+    height: auto;
+    padding: 2rem 8% 2.5rem;
+  }
+
+  /* Make content visible on mobile (no GSAP entrance) */
+  .corridor-step-label,
+  .corridor-step-title,
+  .corridor-step-description,
+  .corridor-step-rule,
+  .corridor-step-next {
+    opacity: 1;
+    transform: none;
+  }
+
+  .corridor-step-title {
+    font-size: clamp(1.5rem, 5vw, 2rem);
+    margin-bottom: 1rem;
+  }
+
+  .corridor-step-description {
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+    max-width: none;
+  }
+
+  .corridor-step-label {
+    margin-bottom: 0.75rem;
+  }
+
+  /* Counter hidden on mobile */
+  .corridor-counter {
+    display: none;
+  }
+}
+
+/* ============================================================
+   TABLET refinements (641-900px)
+   ============================================================ */
+@media (min-width: 641px) and (max-width: 900px) {
+  .corridor-panel-content {
+    padding: 2.5rem 8% 3rem;
+  }
+}
+
+/* ============================================================
+   REDUCED MOTION
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  .corridor-rail-step {
+    transition: none;
+  }
+
+  .corridor-step-next {
+    transition: none;
+  }
+
+  .corridor-step-label,
+  .corridor-step-title,
+  .corridor-step-description,
+  .corridor-step-rule,
+  .corridor-step-next {
+    opacity: 1;
+    transform: none;
+  }
+
+  .corridor-rail-progress-fill {
+    transition: none;
+  }
+
+  .corridor-blueprint-svg line,
+  .corridor-blueprint-svg circle {
+    stroke-dashoffset: 0 !important;
+    opacity: 1 !important;
+  }
+}

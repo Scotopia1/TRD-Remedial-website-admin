@@ -1,0 +1,532 @@
+/* Footer - CGMWTMAR2025 Nico Palmer Pattern with TRD Branding */
+
+/* =====================================================
+   SLIDING BANNER - Above Footer
+   ===================================================== */
+
+.footer-banner {
+  width: 100vw;
+  background-color: #000000;
+  overflow: hidden;
+  padding: 0.1em 0;
+  position: relative;
+}
+
+.footer-banner-track {
+  display: flex;
+  width: 100%;
+}
+
+.footer-banner-content {
+  display: flex;
+  animation: slideLeft 20s linear infinite;
+  white-space: nowrap;
+}
+
+.footer-banner-content span {
+  font-family: "Rader", sans-serif;
+  font-size: 3.5rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+  padding: 0;
+  margin: 0;
+  display: inline-block;
+}
+
+@keyframes slideLeft {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* Responsive Banner */
+@media (max-width: 1000px) {
+  .footer-banner {
+    padding: 0.1em 0;
+  }
+
+  .footer-banner-content span {
+    font-size: 3rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .footer-banner {
+    padding: 0.1em 0;
+  }
+
+  .footer-banner-content span {
+    font-size: 2.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer-banner {
+    padding: 0.1em 0;
+  }
+
+  .footer-banner-content span {
+    font-size: 1.75rem;
+  }
+}
+
+/* Reduced Motion - Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .footer-banner-content {
+    animation: none;
+  }
+}
+
+.footer {
+  width: 100vw;
+  height: auto;
+  padding: 4em 2em 0 2em;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 2em;
+  overflow: hidden;
+  background-color: var(--trd-secondary);
+  color: var(--trd-primary);
+}
+
+/* =====================================================
+   ROW 1 - Contact CTA + Navigation
+   ===================================================== */
+
+.footer-row:nth-child(1) {
+  display: flex;
+  justify-content: space-between;
+  gap: 4em;
+}
+
+.footer-contact {
+  flex: 1;
+  max-width: 50%;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5em;
+}
+
+.footer-contact h3 {
+  font-family: "Messina Sans", sans-serif;
+  font-size: 1.75rem;
+  line-height: 1.4;
+  font-weight: 400;
+  color: var(--trd-primary);
+}
+
+.footer-contact h3 span {
+  color: var(--trd-accent);
+}
+
+.footer-contact p.secondary {
+  font-family: "Messina Sans", sans-serif;
+  font-size: 1rem;
+  line-height: 1.6;
+  font-weight: 400;
+  color: var(--trd-accent);
+}
+
+.footer-contact .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 2rem;
+  background-color: var(--trd-primary);
+  color: var(--trd-secondary);
+  font-family: "Messina Sans Mono", monospace;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  border-radius: 0.5rem;
+  transition: all 0.3s ease;
+  width: fit-content;
+}
+
+.footer-contact .btn:hover {
+  background-color: var(--trd-accent);
+  color: var(--trd-secondary);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.footer-nav {
+  flex: 1;
+  max-width: 50%;
+  display: flex;
+  flex-direction: column;
+}
+
+.footer-nav-item {
+  width: 100%;
+  padding: 1em 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px dashed var(--trd-primary);
+  font-family: "Messina Sans", sans-serif;
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--trd-primary);
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.footer-nav-item:last-child {
+  border-bottom: 1px dashed var(--trd-primary);
+}
+
+.footer-nav-item:hover {
+  color: var(--trd-accent);
+  padding-left: 0.5em;
+}
+
+.footer-nav-item span:last-child {
+  transition: transform 0.3s ease;
+}
+
+.footer-nav-item:hover span:last-child {
+  transform: translateX(4px);
+}
+
+/* =====================================================
+   ROW 2 - Massive Typography + Copyright
+   ===================================================== */
+
+.footer-row:nth-child(2) {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5em;
+  margin-bottom: 0;
+}
+
+.footer-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.footer-logo {
+  position: relative;
+  width: 910px;
+  max-width: 90%;
+  height: auto;
+  display: flex;
+  align-items: center;
+}
+
+.footer-logo img {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  filter: none;
+}
+
+.footer-copyright-line {
+  width: 100%;
+  padding: 0.5em 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-top: 1px dashed var(--trd-primary);
+  margin-bottom: 0;
+}
+
+.footer-copyright-line p {
+  font-family: "Messina Sans Mono", monospace;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--trd-accent);
+  white-space: nowrap;
+  margin: 0;
+}
+
+/* =====================================================
+   RESPONSIVE - TABLET (max-width: 1000px)
+   ===================================================== */
+
+@media (max-width: 1000px) {
+  .footer {
+    padding: 3em 2em 0 2em;
+    gap: 1.5em;
+  }
+
+  /* Row 1 */
+  .footer-row:nth-child(1) {
+    flex-direction: column;
+    gap: 3em;
+  }
+
+  .footer-contact {
+    max-width: 100%;
+    gap: 1.25em;
+  }
+
+  .footer-contact h3 {
+    font-size: 1.5rem;
+  }
+
+  .footer-contact p.secondary {
+    font-size: 0.95rem;
+  }
+
+  .footer-nav {
+    max-width: 100%;
+  }
+
+  .footer-nav-item {
+    padding: 0.875em 0;
+    font-size: 0.95rem;
+  }
+
+  /* Row 2 */
+  .footer-logo {
+    width: 715px;
+    max-width: 85%;
+  }
+
+  .footer-copyright-line {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.5em 2em;
+  }
+
+  .footer-copyright-line p {
+    font-size: 0.75rem;
+  }
+}
+
+/* =====================================================
+   RESPONSIVE - SMALL TABLET (max-width: 768px)
+   ===================================================== */
+
+@media (max-width: 768px) {
+  .footer {
+    padding: 2.5em 1.5em 0 1.5em;
+    gap: 1.25em;
+  }
+
+  .footer-row:nth-child(1) {
+    gap: 2.5em;
+  }
+
+  .footer-contact h3 {
+    font-size: 1.35rem;
+    line-height: 1.35;
+  }
+
+  .footer-contact p.secondary {
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+
+  .footer-contact .btn {
+    padding: 0.875rem 1.75rem;
+    font-size: 0.8rem;
+  }
+
+  .footer-nav-item {
+    padding: 0.75em 0;
+    font-size: 0.9rem;
+  }
+
+  .footer-logo {
+    width: 585px;
+    max-width: 80%;
+  }
+
+  .footer-row:nth-child(2) {
+    gap: 1.5em;
+  }
+
+  .footer-copyright-line {
+    flex-direction: column;
+    gap: 0.5em;
+    align-items: flex-start;
+  }
+}
+
+/* =====================================================
+   RESPONSIVE - LARGE MOBILE (max-width: 640px)
+   ===================================================== */
+
+@media (max-width: 640px) {
+  .footer {
+    padding: 2em 1.25em 0 1.25em;
+    gap: 1em;
+  }
+
+  .footer-row:nth-child(1) {
+    gap: 2em;
+  }
+
+  .footer-contact {
+    gap: 1em;
+  }
+
+  .footer-contact h3 {
+    font-size: 1.2rem;
+    line-height: 1.3;
+  }
+
+  .footer-contact h3 br {
+    display: none; /* Remove line break on mobile */
+  }
+
+  .footer-contact p.secondary {
+    font-size: 0.85rem;
+  }
+
+  .footer-contact .btn {
+    padding: 0.75rem 1.5rem;
+    font-size: 0.75rem;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .footer-nav-item {
+    padding: 0.65em 0;
+    font-size: 0.85rem;
+  }
+
+  .footer-logo {
+    width: 494px;
+    max-width: 75%;
+  }
+
+  .footer-row:nth-child(2) {
+    gap: 1.25em;
+  }
+
+  .footer-copyright-line p {
+    font-size: 0.7rem;
+    white-space: normal;
+    line-height: 1.4;
+  }
+}
+
+/* =====================================================
+   RESPONSIVE - SMALL MOBILE (max-width: 480px)
+   ===================================================== */
+
+@media (max-width: 480px) {
+  .footer {
+    padding: 1.75em 1em 0 1em;
+    gap: 0.875em;
+  }
+
+  .footer-row:nth-child(1) {
+    gap: 1.75em;
+  }
+
+  .footer-contact {
+    gap: 0.875em;
+  }
+
+  .footer-contact h3 {
+    font-size: 1.1rem;
+    line-height: 1.25;
+  }
+
+  .footer-contact p.secondary {
+    font-size: 0.8rem;
+    line-height: 1.45;
+  }
+
+  .footer-contact .btn {
+    padding: 0.7rem 1.25rem;
+    font-size: 0.7rem;
+    border-radius: 0.375rem;
+  }
+
+  .footer-nav-item {
+    padding: 0.6em 0;
+    font-size: 0.8rem;
+  }
+
+  .footer-logo {
+    width: 390px;
+    max-width: 70%;
+  }
+
+  .footer-row:nth-child(2) {
+    gap: 1em;
+  }
+
+  .footer-copyright-line {
+    padding-top: 0.75em;
+    gap: 0.4em;
+  }
+
+  .footer-copyright-line p {
+    font-size: 0.65rem;
+  }
+}
+
+/* =====================================================
+   RESPONSIVE - EXTRA SMALL (max-width: 360px)
+   ===================================================== */
+
+@media (max-width: 360px) {
+  .footer {
+    padding: 1.5em 0.875em 0 0.875em;
+  }
+
+  .footer-contact h3 {
+    font-size: 1rem;
+  }
+
+  .footer-contact p.secondary {
+    font-size: 0.75rem;
+  }
+
+  .footer-contact .btn {
+    padding: 0.65rem 1rem;
+    font-size: 0.65rem;
+  }
+
+  .footer-nav-item {
+    padding: 0.5em 0;
+    font-size: 0.75rem;
+  }
+
+  .footer-logo {
+    width: 325px;
+    max-width: 65%;
+  }
+
+  .footer-copyright-line p {
+    font-size: 0.6rem;
+  }
+}
+
+/* =====================================================
+   ACCESSIBILITY - Reduced Motion
+   ===================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .footer-contact .btn,
+  .footer-nav-item {
+    transition: none !important;
+    animation: none !important;
+  }
+
+  .footer-contact .btn:hover,
+  .footer-nav-item:hover {
+    transform: none !important;
+  }
+
+  .footer-nav-item:hover span:last-child {
+    transform: none !important;
+  }
+}
