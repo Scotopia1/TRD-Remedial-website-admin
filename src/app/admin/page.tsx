@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Wrench, FolderOpen, Users, HelpCircle, FileText, Image, Plus, ArrowRight } from 'lucide-react';
+import { Wrench, FolderOpen, Users, HelpCircle, FileText, Image, Plus, ArrowRight, Inbox } from 'lucide-react';
 
 interface Stats {
   services: number;
@@ -11,6 +11,8 @@ interface Stats {
   faqs: number;
   content: number;
   media: number;
+  submissions: number;
+  unreadSubmissions: number;
 }
 
 const statCards = [
@@ -20,6 +22,7 @@ const statCards = [
   { key: 'faqs' as const, label: 'FAQs', icon: HelpCircle, href: '/admin/faqs', color: 'bg-orange-50 text-orange-600' },
   { key: 'content' as const, label: 'Content Variables', icon: FileText, href: '/admin/content', color: 'bg-indigo-50 text-indigo-600' },
   { key: 'media' as const, label: 'Media Files', icon: Image, href: '/admin/media', color: 'bg-pink-50 text-pink-600' },
+  { key: 'submissions' as const, label: 'Submissions', icon: Inbox, href: '/admin/contact-submissions', color: 'bg-cyan-50 text-cyan-600' },
 ];
 
 const quickActions = [
@@ -27,6 +30,7 @@ const quickActions = [
   { label: 'New Project', href: '/admin/projects/new', icon: Plus },
   { label: 'New Team Member', href: '/admin/team/new', icon: Plus },
   { label: 'New FAQ', href: '/admin/faqs/new', icon: Plus },
+  { label: 'Submissions', href: '/admin/contact-submissions', icon: ArrowRight },
   { label: 'Edit Homepage', href: '/admin/content/homepage', icon: ArrowRight },
   { label: 'Site Settings', href: '/admin/settings', icon: ArrowRight },
 ];

@@ -189,3 +189,20 @@ export const testimonialSchema = z.object({
 })
 
 export const testimonialUpdateSchema = testimonialSchema.partial()
+
+// Contact Submission validation schema (public form)
+export const contactSubmissionSchema = z.object({
+  name: z.string().min(2, 'Name must be at least 2 characters'),
+  email: z.string().email('Invalid email address'),
+  phone: z.string().optional(),
+  company: z.string().optional(),
+  serviceInterest: z.string().optional(),
+  projectType: z.string().optional(),
+  message: z.string().min(20, 'Message must be at least 20 characters'),
+})
+
+// Contact Submission admin update schema
+export const contactSubmissionUpdateSchema = z.object({
+  status: z.enum(['unread', 'read', 'replied']).optional(),
+  adminNotes: z.string().optional().nullable(),
+})

@@ -10,6 +10,8 @@ export async function GET() {
       faqsCount,
       contentCount,
       mediaCount,
+      submissionsCount,
+      unreadSubmissionsCount,
     ] = await Promise.all([
       prisma.service.count(),
       prisma.project.count(),
@@ -17,6 +19,8 @@ export async function GET() {
       prisma.fAQ.count(),
       prisma.pageContent.count(),
       prisma.media.count(),
+      prisma.contactSubmission.count(),
+      prisma.contactSubmission.count({ where: { status: 'unread' } }),
     ]);
 
     return NextResponse.json({
@@ -28,6 +32,8 @@ export async function GET() {
         faqs: faqsCount,
         content: contentCount,
         media: mediaCount,
+        submissions: submissionsCount,
+        unreadSubmissions: unreadSubmissionsCount,
       },
     });
   } catch (error) {

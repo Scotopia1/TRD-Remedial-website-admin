@@ -16,8 +16,9 @@ import {
   ChevronRight,
   MessageSquare,
   BookOpen,
+  Inbox,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const navItems = [
   { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
@@ -28,6 +29,7 @@ const navItems = [
   { label: 'Page Content', href: '/admin/content', icon: FileText },
   { label: 'FAQs', href: '/admin/faqs', icon: HelpCircle },
   { label: 'Testimonials', href: '/admin/testimonials', icon: MessageSquare },
+  { label: 'Submissions', href: '/admin/contact-submissions', icon: Inbox },
   { label: 'Case Studies', href: '/admin/case-studies', icon: BookOpen },
   { label: 'Media', href: '/admin/media', icon: Image },
   { label: 'Settings', href: '/admin/settings', icon: Settings },
@@ -36,6 +38,19 @@ const navItems = [
 export function AdminSidebar() {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  // Fetch unread submissions count
+  useEffect(() => {
+    fetch('/api/admin/contact-submissions?countOnly=true')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.success && data.data?.unreadCount) {
+          setUnreadCount(data.data.unreadCount);
+        }
+      })
+      .catch(() => {});
+  }, [pathname]); // Re-fetch when navigating
 
   const isActive = (href: string) => {
     if (href === '/admin') return pathname === '/admin';
@@ -78,7 +93,16 @@ export function AdminSidebar() {
                   title={collapsed ? item.label : undefined}
                 >
                   <Icon size={18} className="flex-shrink-0" />
-                  {!collapsed && <span>{item.label}</span>}
+                  {!collapsed && (
+                    <span className="flex items-center gap-2 flex-1">
+                      {item.label}
+                      {item.label === 'Submissions' && unreadCount > 0 && (
+                        <span className="ml-auto inline-flex items-center justify-center min-w-[18px] h-[18px] rounded-full bg-blue-500 text-white text-[10px] font-medium px-1">
+                          {unreadCount}
+                        </span>
+                      )}
+                    </span>
+                  )}
                 </Link>
               </li>
             );
