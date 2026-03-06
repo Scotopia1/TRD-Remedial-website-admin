@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { testimonialSchema } from '@/lib/validations'
 import { successResponse, handleApiError } from '@/lib/api-utils'
+import { triggerRevalidation } from '@/lib/revalidate'
 
 // GET /api/admin/testimonials - List all testimonials
 export async function GET() {
@@ -24,6 +25,8 @@ export async function POST(request: NextRequest) {
     const testimonial = await prisma.testimonial.create({
       data: validatedData,
     })
+
+    triggerRevalidation('testimonials')
 
     return successResponse(testimonial, 201)
   } catch (error) {

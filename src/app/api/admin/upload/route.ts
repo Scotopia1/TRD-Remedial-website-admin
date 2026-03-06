@@ -16,6 +16,8 @@ export async function POST(request: NextRequest) {
     const file = formData.get('file') as File | null;
     const folder = (formData.get('folder') as string) || 'uploads';
     const alt = (formData.get('alt') as string) || '';
+    // mediaFolder is the organizational folder in the media library UI (separate from ImageKit storage path)
+    const mediaFolder = formData.get('mediaFolder') as string | null;
 
     if (!file) {
       return NextResponse.json(
@@ -48,6 +50,7 @@ export async function POST(request: NextRequest) {
     const result = await uploadToImageKit(buffer, file.name, folder);
 
     // Create media record with ImageKit data
+    // Use mediaFolder for the organizational folder; fall back to null if not provided
     const media = await prisma.media.create({
       data: {
         filename: file.name,
@@ -55,7 +58,7 @@ export async function POST(request: NextRequest) {
         mimeType: file.type,
         size: result.size,
         alt,
-        folder,
+        folder: mediaFolder || null,
         width: result.width,
         height: result.height,
         imagekitId: result.fileId,

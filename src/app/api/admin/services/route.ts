@@ -3,6 +3,7 @@ import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { serviceSchema } from '@/lib/validations'
 import { successResponse, handleApiError } from '@/lib/api-utils'
+import { triggerRevalidation } from '@/lib/revalidate'
 
 // GET /api/admin/services - List all services
 export async function GET() {
@@ -18,7 +19,7 @@ export async function GET() {
         }
       },
       orderBy: {
-        createdAt: 'desc'
+        order: 'asc'
       }
     })
 
@@ -40,6 +41,8 @@ export async function POST(request: NextRequest) {
         projects: true
       }
     })
+
+    triggerRevalidation('service')
 
     return successResponse(service, 201)
   } catch (error) {

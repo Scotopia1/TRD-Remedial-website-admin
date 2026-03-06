@@ -3,6 +3,7 @@ import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { projectUpdateSchema } from '@/lib/validations'
 import { successResponse, errorResponse, handleApiError } from '@/lib/api-utils'
+import { triggerRevalidation } from '@/lib/revalidate'
 
 type RouteContext = {
   params: Promise<{ id: string }>
@@ -73,6 +74,8 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       }
     })
 
+    triggerRevalidation('project', project.slug)
+
     return successResponse(project)
   } catch (error) {
     return handleApiError(error)
@@ -87,6 +90,8 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
     await prisma.project.delete({
       where: { id }
     })
+
+    triggerRevalidation('project')
 
     return successResponse({ message: 'Project deleted successfully' })
   } catch (error) {

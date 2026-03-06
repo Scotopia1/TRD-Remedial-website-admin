@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { successResponse, errorResponse, handleApiError } from '@/lib/api-utils';
+import { triggerRevalidation } from '@/lib/revalidate';
 
 // GET /api/admin/content - List all or filter by page
 export async function GET(request: NextRequest) {
@@ -39,6 +40,8 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    triggerRevalidation('content');
+
     return successResponse(content, 201);
   } catch (error) {
     return handleApiError(error);
@@ -66,6 +69,8 @@ export async function PUT(request: NextRequest) {
         })
       )
     );
+
+    triggerRevalidation('content');
 
     return successResponse(results);
   } catch (error) {

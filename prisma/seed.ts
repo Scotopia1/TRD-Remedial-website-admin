@@ -502,7 +502,7 @@ async function main() {
     {key:'home.hero.tagline.2',value:'REMEDIAL',page:'home',section:'hero',label:'Hero Tagline Word 2',type:'text',order:2},
     {key:'home.hero.tagline.3',value:'EXPERTS',page:'home',section:'hero',label:'Hero Tagline Word 3',type:'text',order:3},
     {key:'home.hero.cta',value:'EXPLORE OUR SERVICES',page:'home',section:'hero',label:'Hero CTA Text',type:'text',order:4},
-    {key:'home.hero.video',value:'/videos/hero-video',page:'home',section:'hero',label:'Hero Video Path',type:'text',order:5},
+    {key:'home.hero.video',value:'/videos/hero-video',page:'home',section:'hero',label:'Hero Video Path',type:'video',order:5},
     {key:'home.hero.poster',value:'/videos/hero-poster.webp',page:'home',section:'hero',label:'Hero Video Poster',type:'image',order:6},
 
     // ------------------------------------------------------------------

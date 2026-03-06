@@ -6,6 +6,18 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { Save, ArrowLeft, Plus, X } from 'lucide-react';
 import { ImageUploadField } from './ImageUploadField';
+import { CharacterCounter } from './CharacterCounter';
+import { FormField } from './FormField';
+import { FormErrorSummary } from './FormErrorSummary';
+import {
+  CHAR_LIMITS,
+  HELP_TEXT,
+  requiredMaxLength,
+  optionalMaxLength,
+  slugRules,
+  inputClass,
+  generateSlug,
+} from '@/lib/form-validation';
 
 interface ServiceFormData {
   slug: string;
@@ -94,6 +106,7 @@ export function ServiceForm({ serviceId }: ServiceFormProps) {
   const [processSteps, setProcessSteps] = useState<{ step: number; title: string; description: string; image?: string }[]>([]);
   const [faqs, setFaqs] = useState<{ question: string; answer: string }[]>([]);
   const [testimonials, setTestimonials] = useState<{ quote: string; role: string; company: string }[]>([]);
+  const [showErrors, setShowErrors] = useState(false);
 
   // Controlled image state
   const [icon, setIcon] = useState('');
@@ -104,7 +117,26 @@ export function ServiceForm({ serviceId }: ServiceFormProps) {
 
   const isEdit = !!serviceId;
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<ServiceFormData>();
+  const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<ServiceFormData>();
+
+  const watchTitle = watch('title', '');
+  const watchSlug = watch('slug', '');
+  const watchTagline = watch('tagline', '');
+  const watchDescription = watch('description', '');
+  const watchMetaTitle = watch('metaTitle', '');
+  const watchMetaDescription = watch('metaDescription', '');
+  const watchCommonApps = watch('commonApplications', '');
+  const watchWhyChoose = watch('whyChooseTRD', '');
+  const watchServiceArea = watch('serviceArea', '');
+  const watchDetailPage = watch('detailPage', '');
+
+  // Auto-generate slug from title (only when creating new)
+  useEffect(() => {
+    if (!isEdit && watchTitle) {
+      const slug = generateSlug(watchTitle);
+      setValue('slug', slug);
+    }
+  }, [watchTitle, isEdit, setValue]);
 
   useEffect(() => {
     if (serviceId) {
@@ -146,6 +178,7 @@ export function ServiceForm({ serviceId }: ServiceFormProps) {
   }, [serviceId, reset]);
 
   const onSubmit = async (data: ServiceFormData) => {
+    setShowErrors(false);
     setLoading(true);
     try {
       const payload = {
@@ -179,6 +212,7 @@ export function ServiceForm({ serviceId }: ServiceFormProps) {
 
       if (result.success) {
         toast.success(isEdit ? 'Service updated!' : 'Service created!');
+        router.refresh();
         router.push('/admin/services');
       } else {
         toast.error(result.error || 'Failed to save');
@@ -188,6 +222,10 @@ export function ServiceForm({ serviceId }: ServiceFormProps) {
     } finally {
       setLoading(false);
     }
+  };
+
+  const onError = () => {
+    setShowErrors(true);
   };
 
   // Stats helpers
@@ -229,8 +267,10 @@ export function ServiceForm({ serviceId }: ServiceFormProps) {
     setTestimonials(updated);
   };
 
+  const errorCount = Object.keys(errors).length;
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 max-w-4xl">
+    <form onSubmit={handleSubmit(onSubmit, onError)} className="space-y-8 max-w-4xl">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -256,48 +296,53 @@ export function ServiceForm({ serviceId }: ServiceFormProps) {
         </button>
       </div>
 
+      <FormErrorSummary errorCount={errorCount} show={showErrors} />
+
       {/* Basic Info */}
       <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
         <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider" style={{ fontFamily: 'system-ui' }}>Basic Information</h2>
 
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+          <FormField label="Title" required error={errors.title?.message}
+            counter={<CharacterCounter current={watchTitle?.length || 0} max={CHAR_LIMITS.title} />}>
             <input
-              {...register('title', { required: 'Title is required' })}
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300"
+              {...register('title', requiredMaxLength(CHAR_LIMITS.title))}
+              maxLength={CHAR_LIMITS.title}
+              className={inputClass(!!errors.title)}
               style={{ fontFamily: 'system-ui' }}
             />
-            {errors.title && <p className="text-xs text-red-500 mt-1">{errors.title.message}</p>}
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Slug</label>
+          </FormField>
+          <FormField label="Slug" required error={errors.slug?.message} helpText={HELP_TEXT.slug}
+            counter={<CharacterCounter current={watchSlug?.length || 0} max={CHAR_LIMITS.slug} />}>
             <input
-              {...register('slug', { required: 'Slug is required' })}
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300"
+              {...register('slug', slugRules())}
+              maxLength={CHAR_LIMITS.slug}
+              className={inputClass(!!errors.slug)}
               style={{ fontFamily: 'system-ui' }}
             />
-          </div>
+          </FormField>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Tagline</label>
+        <FormField label="Tagline" required error={errors.tagline?.message} helpText={HELP_TEXT.shortDescription}
+          counter={<CharacterCounter current={watchTagline?.length || 0} max={CHAR_LIMITS.tagline} />}>
           <input
-            {...register('tagline', { required: 'Tagline is required' })}
-            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300"
+            {...register('tagline', requiredMaxLength(CHAR_LIMITS.tagline))}
+            maxLength={CHAR_LIMITS.tagline}
+            className={inputClass(!!errors.tagline)}
             style={{ fontFamily: 'system-ui' }}
           />
-        </div>
+        </FormField>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+        <FormField label="Description" required error={errors.description?.message}
+          counter={<CharacterCounter current={watchDescription?.length || 0} max={CHAR_LIMITS.longText} />}>
           <textarea
-            {...register('description', { required: 'Description is required' })}
+            {...register('description', requiredMaxLength(CHAR_LIMITS.longText))}
+            maxLength={CHAR_LIMITS.longText}
             rows={4}
-            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300 resize-y"
+            className={`${inputClass(!!errors.description)} resize-y`}
             style={{ fontFamily: 'system-ui' }}
           />
-        </div>
+        </FormField>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
@@ -305,7 +350,7 @@ export function ServiceForm({ serviceId }: ServiceFormProps) {
             <input
               type="number"
               {...register('order', { valueAsNumber: true })}
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300"
+              className={inputClass()}
               style={{ fontFamily: 'system-ui' }}
             />
           </div>
@@ -345,12 +390,15 @@ export function ServiceForm({ serviceId }: ServiceFormProps) {
             onChange={setVisual}
             folder="services"
           />
-          <ImageUploadField
-            label="Hero Image"
-            value={heroImage}
-            onChange={setHeroImage}
-            folder="services"
-          />
+          <div>
+            <ImageUploadField
+              label="Hero Image"
+              value={heroImage}
+              onChange={setHeroImage}
+              folder="services"
+            />
+            <p className="text-gray-400 text-xs mt-1 italic" style={{ fontFamily: 'system-ui' }}>{HELP_TEXT.heroImage}</p>
+          </div>
           <ImageUploadField
             label="Feature Image"
             value={featureImage}
@@ -380,8 +428,9 @@ export function ServiceForm({ serviceId }: ServiceFormProps) {
                     type="text"
                     value={stat.value}
                     onChange={(e) => updateStat(idx, 'value', e.target.value)}
+                    maxLength={CHAR_LIMITS.title}
                     placeholder="e.g. 500+"
-                    className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300"
+                    className={inputClass()}
                     style={{ fontFamily: 'system-ui' }}
                   />
                 </div>
@@ -391,8 +440,9 @@ export function ServiceForm({ serviceId }: ServiceFormProps) {
                     type="text"
                     value={stat.label}
                     onChange={(e) => updateStat(idx, 'label', e.target.value)}
+                    maxLength={CHAR_LIMITS.title}
                     placeholder="e.g. Projects Completed"
-                    className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300"
+                    className={inputClass()}
                     style={{ fontFamily: 'system-ui' }}
                   />
                 </div>
@@ -428,7 +478,8 @@ export function ServiceForm({ serviceId }: ServiceFormProps) {
                       type="text"
                       value={step.title}
                       onChange={(e) => updateStep(idx, 'title', e.target.value)}
-                      className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300"
+                      maxLength={CHAR_LIMITS.title}
+                      className={inputClass()}
                       style={{ fontFamily: 'system-ui' }}
                     />
                   </div>
@@ -437,8 +488,9 @@ export function ServiceForm({ serviceId }: ServiceFormProps) {
                     <textarea
                       value={step.description}
                       onChange={(e) => updateStep(idx, 'description', e.target.value)}
+                      maxLength={CHAR_LIMITS.longText}
                       rows={2}
-                      className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300 resize-y"
+                      className={`${inputClass()} resize-y`}
                       style={{ fontFamily: 'system-ui' }}
                     />
                   </div>
@@ -476,7 +528,8 @@ export function ServiceForm({ serviceId }: ServiceFormProps) {
                   type="text"
                   value={faq.question}
                   onChange={(e) => updateFaq(idx, 'question', e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300"
+                  maxLength={CHAR_LIMITS.tagline}
+                  className={inputClass()}
                   style={{ fontFamily: 'system-ui' }}
                 />
               </div>
@@ -485,8 +538,9 @@ export function ServiceForm({ serviceId }: ServiceFormProps) {
                 <textarea
                   value={faq.answer}
                   onChange={(e) => updateFaq(idx, 'answer', e.target.value)}
+                  maxLength={CHAR_LIMITS.longText}
                   rows={3}
-                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300 resize-y"
+                  className={`${inputClass()} resize-y`}
                   style={{ fontFamily: 'system-ui' }}
                 />
               </div>
@@ -515,10 +569,14 @@ export function ServiceForm({ serviceId }: ServiceFormProps) {
                 <textarea
                   value={t.quote}
                   onChange={(e) => updateTestimonial(idx, 'quote', e.target.value)}
+                  maxLength={CHAR_LIMITS.quote}
                   rows={3}
-                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300 resize-y"
+                  className={`${inputClass()} resize-y`}
                   style={{ fontFamily: 'system-ui' }}
                 />
+                <div className="mt-1">
+                  <CharacterCounter current={t.quote.length} max={CHAR_LIMITS.quote} />
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -527,7 +585,8 @@ export function ServiceForm({ serviceId }: ServiceFormProps) {
                     type="text"
                     value={t.role}
                     onChange={(e) => updateTestimonial(idx, 'role', e.target.value)}
-                    className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300"
+                    maxLength={CHAR_LIMITS.title}
+                    className={inputClass()}
                     style={{ fontFamily: 'system-ui' }}
                   />
                 </div>
@@ -537,7 +596,8 @@ export function ServiceForm({ serviceId }: ServiceFormProps) {
                     type="text"
                     value={t.company}
                     onChange={(e) => updateTestimonial(idx, 'company', e.target.value)}
-                    className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300"
+                    maxLength={CHAR_LIMITS.title}
+                    className={inputClass()}
                     style={{ fontFamily: 'system-ui' }}
                   />
                 </div>
@@ -554,53 +614,58 @@ export function ServiceForm({ serviceId }: ServiceFormProps) {
       <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
         <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider" style={{ fontFamily: 'system-ui' }}>SEO & Content</h2>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Meta Title</label>
+        <FormField label="Meta Title" error={errors.metaTitle?.message} helpText={HELP_TEXT.metaTitle}
+          counter={<CharacterCounter current={watchMetaTitle?.length || 0} max={CHAR_LIMITS.metaTitle} />}>
           <input
-            {...register('metaTitle')}
-            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300"
+            {...register('metaTitle', optionalMaxLength(CHAR_LIMITS.metaTitle))}
+            maxLength={CHAR_LIMITS.metaTitle}
+            className={inputClass(!!errors.metaTitle)}
             style={{ fontFamily: 'system-ui' }}
           />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Meta Description</label>
+        </FormField>
+        <FormField label="Meta Description" error={errors.metaDescription?.message} helpText={HELP_TEXT.metaDescription}
+          counter={<CharacterCounter current={watchMetaDescription?.length || 0} max={CHAR_LIMITS.metaDescription} />}>
           <textarea
-            {...register('metaDescription')}
+            {...register('metaDescription', optionalMaxLength(CHAR_LIMITS.metaDescription))}
+            maxLength={CHAR_LIMITS.metaDescription}
             rows={2}
-            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300 resize-y"
+            className={`${inputClass(!!errors.metaDescription)} resize-y`}
             style={{ fontFamily: 'system-ui' }}
           />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Common Applications</label>
+        </FormField>
+        <FormField label="Common Applications"
+          counter={<CharacterCounter current={watchCommonApps?.length || 0} max={CHAR_LIMITS.longText} />}>
           <textarea
-            {...register('commonApplications')}
+            {...register('commonApplications', optionalMaxLength(CHAR_LIMITS.longText))}
+            maxLength={CHAR_LIMITS.longText}
             rows={6}
             placeholder="Describe typical applications for this service..."
-            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300 resize-y"
+            className={`${inputClass()} resize-y`}
             style={{ fontFamily: 'system-ui' }}
           />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Why Choose TRD</label>
+        </FormField>
+        <FormField label="Why Choose TRD"
+          counter={<CharacterCounter current={watchWhyChoose?.length || 0} max={CHAR_LIMITS.longText} />}>
           <textarea
-            {...register('whyChooseTRD')}
+            {...register('whyChooseTRD', optionalMaxLength(CHAR_LIMITS.longText))}
+            maxLength={CHAR_LIMITS.longText}
             rows={6}
             placeholder="Explain why clients should choose TRD for this service..."
-            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300 resize-y"
+            className={`${inputClass()} resize-y`}
             style={{ fontFamily: 'system-ui' }}
           />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Service Area</label>
+        </FormField>
+        <FormField label="Service Area"
+          counter={<CharacterCounter current={watchServiceArea?.length || 0} max={CHAR_LIMITS.longText} />}>
           <textarea
-            {...register('serviceArea')}
+            {...register('serviceArea', optionalMaxLength(CHAR_LIMITS.longText))}
+            maxLength={CHAR_LIMITS.longText}
             rows={4}
             placeholder="Describe the geographic service area..."
-            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300 resize-y"
+            className={`${inputClass()} resize-y`}
             style={{ fontFamily: 'system-ui' }}
           />
-        </div>
+        </FormField>
       </div>
 
       {/* Related Services & Links */}
@@ -612,19 +677,20 @@ export function ServiceForm({ serviceId }: ServiceFormProps) {
           <input
             {...register('relatedServiceSlugs')}
             placeholder="structural-alterations, crack-injection"
-            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300"
+            className={inputClass()}
             style={{ fontFamily: 'system-ui' }}
           />
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Detail Page URL</label>
+        <FormField label="Detail Page URL" error={errors.detailPage?.message}
+          counter={<CharacterCounter current={watchDetailPage?.length || 0} max={CHAR_LIMITS.url} />}>
           <input
-            {...register('detailPage')}
+            {...register('detailPage', optionalMaxLength(CHAR_LIMITS.url))}
+            maxLength={CHAR_LIMITS.url}
             placeholder="/services/structural-strengthening"
-            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300"
+            className={inputClass(!!errors.detailPage)}
             style={{ fontFamily: 'system-ui' }}
           />
-        </div>
+        </FormField>
       </div>
     </form>
   );

@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { successResponse, errorResponse, handleApiError } from '@/lib/api-utils';
 import { faqSchema } from '@/lib/validations';
+import { triggerRevalidation } from '@/lib/revalidate';
 
 // GET /api/admin/faqs
 export async function GET() {
@@ -36,6 +37,8 @@ export async function POST(request: NextRequest) {
         isActive: parsed.data.isActive,
       },
     });
+
+    triggerRevalidation('faqs');
 
     return successResponse(faq, 201);
   } catch (error) {

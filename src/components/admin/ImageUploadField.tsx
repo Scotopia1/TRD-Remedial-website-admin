@@ -1,8 +1,9 @@
 'use client';
 
 import { useRef, useState, useCallback } from 'react';
-import { Upload, X, Link, Loader2, ImageIcon } from 'lucide-react';
+import { Upload, X, Link, Loader2, ImageIcon, FolderOpen } from 'lucide-react';
 import { toast } from 'sonner';
+import { MediaLibraryPicker } from './MediaLibraryPicker';
 
 interface ImageUploadFieldProps {
   label: string;
@@ -26,6 +27,7 @@ export function ImageUploadField({
   const [uploading, setUploading] = useState(false);
   const [urlInput, setUrlInput] = useState('');
   const [showUrlInput, setShowUrlInput] = useState(false);
+  const [showMediaPicker, setShowMediaPicker] = useState(false);
 
   const uploadFile = useCallback(
     async (file: File) => {
@@ -206,7 +208,7 @@ export function ImageUploadField({
         </div>
       )}
 
-      {/* URL paste row */}
+      {/* URL paste row & media library button */}
       {!value && (
         <div className="flex items-center gap-2">
           {showUrlInput ? (
@@ -242,15 +244,27 @@ export function ImageUploadField({
               </button>
             </>
           ) : (
-            <button
-              type="button"
-              onClick={() => setShowUrlInput(true)}
-              className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 transition-colors"
-              style={{ fontFamily: 'system-ui' }}
-            >
-              <Link size={12} />
-              or paste a URL
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setShowMediaPicker(true)}
+                className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                style={{ fontFamily: 'system-ui' }}
+              >
+                <FolderOpen size={12} />
+                Browse Media Library
+              </button>
+              <span className="text-gray-300 text-xs">|</span>
+              <button
+                type="button"
+                onClick={() => setShowUrlInput(true)}
+                className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                style={{ fontFamily: 'system-ui' }}
+              >
+                <Link size={12} />
+                Paste a URL
+              </button>
+            </div>
           )}
         </div>
       )}
@@ -261,6 +275,13 @@ export function ImageUploadField({
           {value}
         </p>
       )}
+
+      {/* Media Library Picker Modal */}
+      <MediaLibraryPicker
+        open={showMediaPicker}
+        onSelect={(media) => onChange(media.url)}
+        onClose={() => setShowMediaPicker(false)}
+      />
     </div>
   );
 }

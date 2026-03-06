@@ -3,6 +3,7 @@ import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { serviceUpdateSchema } from '@/lib/validations'
 import { successResponse, errorResponse, handleApiError } from '@/lib/api-utils'
+import { triggerRevalidation } from '@/lib/revalidate'
 
 type RouteContext = {
   params: Promise<{ id: string }>
@@ -52,6 +53,8 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       }
     })
 
+    triggerRevalidation('service', service.slug)
+
     return successResponse(service)
   } catch (error) {
     return handleApiError(error)
@@ -87,6 +90,8 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
     await prisma.service.delete({
       where: { id }
     })
+
+    triggerRevalidation('service')
 
     return successResponse({ message: 'Service deleted successfully' })
   } catch (error) {

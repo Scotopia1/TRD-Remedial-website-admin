@@ -510,7 +510,7 @@ const DEFAULT_CONTENT: DefaultContentItem[] = [
   {
     key: 'home.hero.video',
     value: '/videos/hero-video',
-    type: 'text',
+    type: 'video',
     page: 'home',
     section: 'hero',
     label: 'Hero Video Path',
@@ -837,21 +837,32 @@ const DEFAULT_CONTENT: DefaultContentItem[] = [
 
 // POST /api/admin/content/initialize
 // Creates default PageContent entries for any keys that don't yet exist.
+// Also updates the `type` field of existing records when the default type has changed,
+// so that field type migrations (e.g. 'text' → 'video') take effect without a full reseed.
 export async function POST() {
   try {
     let created = 0;
+    let typeUpdated = 0;
 
     for (const item of DEFAULT_CONTENT) {
       const exists = await prisma.pageContent.findUnique({ where: { key: item.key } });
       if (!exists) {
         await prisma.pageContent.create({ data: item });
         created++;
+      } else if (exists.type !== item.type) {
+        // Type field has changed in the default config — update it so the admin UI
+        // renders the correct field widget (e.g. VideoField instead of plain text input).
+        await prisma.pageContent.update({
+          where: { key: item.key },
+          data: { type: item.type },
+        });
+        typeUpdated++;
       }
     }
 
     return NextResponse.json({
       success: true,
-      data: { created, total: DEFAULT_CONTENT.length },
+      data: { created, typeUpdated, total: DEFAULT_CONTENT.length },
     });
   } catch (error) {
     console.error('[content/initialize] Error:', error);

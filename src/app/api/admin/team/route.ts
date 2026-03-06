@@ -3,6 +3,7 @@ import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { teamMemberSchema } from '@/lib/validations'
 import { successResponse, handleApiError } from '@/lib/api-utils'
+import { triggerRevalidation } from '@/lib/revalidate'
 
 // GET /api/admin/team - List all team members
 export async function GET() {
@@ -46,6 +47,8 @@ export async function POST(request: NextRequest) {
         projects: true
       }
     })
+
+    triggerRevalidation('team')
 
     return successResponse(teamMember, 201)
   } catch (error) {

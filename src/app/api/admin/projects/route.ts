@@ -3,6 +3,7 @@ import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { projectSchema } from '@/lib/validations'
 import { successResponse, handleApiError } from '@/lib/api-utils'
+import { triggerRevalidation } from '@/lib/revalidate'
 
 // GET /api/admin/projects - List all projects
 export async function GET(request: NextRequest) {
@@ -75,6 +76,8 @@ export async function POST(request: NextRequest) {
         relatedProjects: { select: { id: true, name: true, slug: true } },
       }
     })
+
+    triggerRevalidation('project')
 
     return successResponse(project, 201)
   } catch (error) {

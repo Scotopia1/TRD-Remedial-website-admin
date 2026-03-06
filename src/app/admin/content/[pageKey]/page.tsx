@@ -3,8 +3,10 @@
 import { use, useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { Save, ArrowLeft, Loader2, RefreshCw, Sparkles } from 'lucide-react';
+import { Save, ArrowLeft, Loader2, Sparkles, Video, X, Link } from 'lucide-react';
 import { ImageUploadField } from '@/components/admin/ImageUploadField';
+import { CharacterCounter } from '@/components/admin/CharacterCounter';
+import { CHAR_LIMITS } from '@/lib/form-validation';
 
 interface ContentItem {
   id: string;
@@ -223,7 +225,166 @@ export default function EditPageContentPage({ params }: { params: Promise<{ page
 }
 
 /* ------------------------------------------------------------------ */
-/* Field renderer — picks the right input based on item.type           */
+/* Video field -- URL input with inline video preview                   */
+/* ------------------------------------------------------------------ */
+
+interface VideoFieldProps {
+  value: string;
+  onChange: (url: string) => void;
+}
+
+function VideoField({ value, onChange }: VideoFieldProps) {
+  const [urlInput, setUrlInput] = useState('');
+  const [showUrlInput, setShowUrlInput] = useState(false);
+
+  const handleUrlSubmit = () => {
+    const trimmed = urlInput.trim();
+    if (trimmed) {
+      onChange(trimmed);
+      setUrlInput('');
+      setShowUrlInput(false);
+    }
+  };
+
+  const handleUrlKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') { e.preventDefault(); handleUrlSubmit(); }
+    if (e.key === 'Escape') { setShowUrlInput(false); setUrlInput(''); }
+  };
+
+  return (
+    <div className="space-y-2">
+      {value ? (
+        <div className="rounded-xl border border-gray-200 bg-gray-50 overflow-hidden">
+          {/* Video preview -- works for absolute URLs; relative paths show a fallback */}
+          <div className="relative" style={{ height: '180px', background: '#111' }}>
+            <video
+              src={value}
+              muted
+              playsInline
+              preload="metadata"
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                (e.currentTarget as HTMLVideoElement).style.display = 'none';
+                const fallback = e.currentTarget.nextElementSibling as HTMLElement | null;
+                if (fallback) fallback.style.display = 'flex';
+              }}
+            />
+            {/* Fallback when video URL can't be previewed */}
+            <div
+              className="absolute inset-0 items-center justify-center flex-col gap-2 text-gray-400"
+              style={{ display: 'none' }}
+            >
+              <Video size={32} />
+              <p className="text-xs" style={{ fontFamily: 'system-ui' }}>Video path set (no browser preview)</p>
+              <p className="text-[10px] text-gray-300 max-w-[200px] truncate px-2 text-center">{value}</p>
+            </div>
+            {/* Remove button */}
+            <button
+              type="button"
+              onClick={() => onChange('')}
+              className="absolute top-2 right-2 p-1 bg-white/90 backdrop-blur-sm text-gray-600 hover:text-red-500 rounded-full border border-gray-200 transition-colors shadow-sm"
+              title="Clear video path"
+            >
+              <X size={12} />
+            </button>
+          </div>
+          <div className="px-3 py-2 flex items-center justify-between gap-2">
+            <p className="text-[10px] text-gray-400 truncate flex-1" style={{ fontFamily: 'system-ui' }} title={value}>
+              {value}
+            </p>
+            <button
+              type="button"
+              onClick={() => { setUrlInput(value); setShowUrlInput(true); }}
+              className="text-[10px] text-gray-400 hover:text-gray-700 transition-colors flex-shrink-0"
+              style={{ fontFamily: 'system-ui' }}
+            >
+              Edit path
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div
+          className="rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 flex flex-col items-center justify-center gap-3 cursor-pointer hover:border-gray-400 hover:bg-gray-100 transition-all"
+          style={{ height: '140px' }}
+          onClick={() => setShowUrlInput(true)}
+        >
+          <div className="p-3 rounded-full bg-gray-100">
+            <Video size={20} className="text-gray-400" />
+          </div>
+          <p className="text-sm text-gray-500" style={{ fontFamily: 'system-ui' }}>
+            Click to set video path or URL
+          </p>
+        </div>
+      )}
+
+      {/* URL / path input row */}
+      {showUrlInput ? (
+        <div className="flex items-center gap-2">
+          <div className="relative flex-1">
+            <Link size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              value={urlInput}
+              onChange={(e) => setUrlInput(e.target.value)}
+              onKeyDown={handleUrlKeyDown}
+              placeholder="Enter video path or URL..."
+              maxLength={CHAR_LIMITS.url}
+              autoFocus
+              className="w-full pl-8 pr-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300"
+              style={{ fontFamily: 'system-ui' }}
+            />
+          </div>
+          <button
+            type="button"
+            onClick={handleUrlSubmit}
+            className="px-2.5 py-1.5 text-xs bg-gray-900 text-white rounded-lg hover:bg-gray-700 transition-colors"
+            style={{ fontFamily: 'system-ui' }}
+          >
+            Set
+          </button>
+          <button
+            type="button"
+            onClick={() => { setShowUrlInput(false); setUrlInput(''); }}
+            className="px-2.5 py-1.5 text-xs text-gray-500 hover:text-gray-700"
+            style={{ fontFamily: 'system-ui' }}
+          >
+            Cancel
+          </button>
+        </div>
+      ) : !value ? (
+        <button
+          type="button"
+          onClick={() => setShowUrlInput(true)}
+          className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 transition-colors"
+          style={{ fontFamily: 'system-ui' }}
+        >
+          <Link size={12} />
+          paste a path or URL
+        </button>
+      ) : null}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Determine max length for a content field based on its type/key      */
+/* ------------------------------------------------------------------ */
+
+function getMaxLengthForContentField(item: ContentItem): number {
+  if (item.type === 'json') return 10000;
+  if (item.type === 'image' || item.type === 'video') return CHAR_LIMITS.url;
+  // Use key hints to pick appropriate limit
+  const k = item.key.toLowerCase();
+  if (k.includes('title') || k.includes('heading') || k.includes('name')) return CHAR_LIMITS.title;
+  if (k.includes('meta_title') || k.includes('metatitle')) return CHAR_LIMITS.metaTitle;
+  if (k.includes('meta_description') || k.includes('metadescription')) return CHAR_LIMITS.metaDescription;
+  if (k.includes('tagline') || k.includes('subtitle') || k.includes('short')) return CHAR_LIMITS.tagline;
+  if (item.type === 'textarea') return CHAR_LIMITS.longText;
+  return CHAR_LIMITS.longText;
+}
+
+/* ------------------------------------------------------------------ */
+/* Field renderer -- picks the right input based on item.type           */
 /* ------------------------------------------------------------------ */
 
 interface ContentFieldProps {
@@ -236,6 +397,9 @@ function ContentField({ item, value, onChange }: ContentFieldProps) {
   const isJsonValid = (v: string) => {
     try { JSON.parse(v); return true; } catch { return false; }
   };
+
+  const maxLen = getMaxLengthForContentField(item);
+  const showCounter = item.type !== 'image' && item.type !== 'video';
 
   return (
     <div className="space-y-1.5">
@@ -256,6 +420,8 @@ function ContentField({ item, value, onChange }: ContentFieldProps) {
               ? 'bg-amber-50 text-amber-600'
               : item.type === 'image'
               ? 'bg-blue-50 text-blue-600'
+              : item.type === 'video'
+              ? 'bg-purple-50 text-purple-600'
               : item.type === 'textarea'
               ? 'bg-green-50 text-green-600'
               : 'bg-gray-100 text-gray-400'
@@ -267,7 +433,7 @@ function ContentField({ item, value, onChange }: ContentFieldProps) {
 
       {/* Description */}
       {item.description && (
-        <p className="text-xs text-gray-400" style={{ fontFamily: 'system-ui' }}>
+        <p className="text-xs text-gray-400 italic" style={{ fontFamily: 'system-ui' }}>
           {item.description}
         </p>
       )}
@@ -280,6 +446,8 @@ function ContentField({ item, value, onChange }: ContentFieldProps) {
           onChange={(url) => onChange(item.key, url)}
           folder="content"
         />
+      ) : item.type === 'video' ? (
+        <VideoField value={value} onChange={(url) => onChange(item.key, url)} />
       ) : item.type === 'json' ? (
         <div className="relative">
           <textarea
@@ -295,28 +463,53 @@ function ContentField({ item, value, onChange }: ContentFieldProps) {
             style={{ fontFamily: 'ui-monospace, SFMono-Regular, monospace', fontSize: '0.8rem', lineHeight: '1.5' }}
           />
           {value && !isJsonValid(value) && (
-            <p className="text-xs text-red-500 mt-1" style={{ fontFamily: 'system-ui' }}>
-              Invalid JSON — fix before saving
+            <p className="text-red-500 text-sm mt-1" style={{ fontFamily: 'system-ui' }}>
+              Invalid JSON -- fix before saving
             </p>
+          )}
+          {showCounter && (
+            <div className="mt-1">
+              <CharacterCounter current={value.length} max={maxLen} />
+            </div>
           )}
         </div>
       ) : item.type === 'textarea' ? (
-        <textarea
-          value={value}
-          onChange={(e) => onChange(item.key, e.target.value)}
-          rows={5}
-          className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300 resize-y"
-          style={{ fontFamily: 'system-ui' }}
-        />
+        <div>
+          <textarea
+            value={value}
+            onChange={(e) => {
+              if (e.target.value.length <= maxLen) onChange(item.key, e.target.value);
+            }}
+            maxLength={maxLen}
+            rows={5}
+            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300 resize-y"
+            style={{ fontFamily: 'system-ui' }}
+          />
+          {showCounter && (
+            <div className="mt-1">
+              <CharacterCounter current={value.length} max={maxLen} />
+            </div>
+          )}
+        </div>
       ) : (
         /* Default: text */
-        <input
-          type="text"
-          value={value}
-          onChange={(e) => onChange(item.key, e.target.value)}
-          className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300"
-          style={{ fontFamily: 'system-ui' }}
-        />
+        <div>
+          <input
+            type="text"
+            value={value}
+            onChange={(e) => {
+              if (e.target.value.length <= maxLen) onChange(item.key, e.target.value);
+            }}
+            maxLength={maxLen}
+            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300"
+            style={{ fontFamily: 'system-ui' }}
+          />
+          {showCounter && (
+            <div className="mt-1">
+              <CharacterCounter current={value.length} max={maxLen} />
+            </div>
+          )}
+        </div>
       )}
     </div>
   );

@@ -3,6 +3,7 @@ import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { companyValueSchema } from '@/lib/validations'
 import { successResponse, handleApiError } from '@/lib/api-utils'
+import { triggerRevalidation } from '@/lib/revalidate'
 
 // GET /api/admin/values - List all company values
 export async function GET() {
@@ -36,6 +37,8 @@ export async function POST(request: NextRequest) {
     const value = await prisma.companyValue.create({
       data: validatedData
     })
+
+    triggerRevalidation('values')
 
     return successResponse(value, 201)
   } catch (error) {

@@ -3,6 +3,7 @@ import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { siteSettingsUpdateSchema } from '@/lib/validations'
 import { successResponse, handleApiError } from '@/lib/api-utils'
+import { triggerRevalidation } from '@/lib/revalidate'
 
 const SETTINGS_ID = 'main'
 
@@ -66,6 +67,8 @@ export async function PATCH(request: NextRequest) {
         data: validatedData
       })
     }
+
+    triggerRevalidation('settings')
 
     return successResponse(settings)
   } catch (error) {

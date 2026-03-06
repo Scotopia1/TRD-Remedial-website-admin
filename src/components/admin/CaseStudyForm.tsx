@@ -7,6 +7,15 @@ import { toast } from 'sonner';
 import { Save, ArrowLeft, Plus, X } from 'lucide-react';
 import { ImageUploadField } from '@/components/admin/ImageUploadField';
 import { MultiImageUploadField } from '@/components/admin/MultiImageUploadField';
+import { CharacterCounter } from '@/components/admin/CharacterCounter';
+import { FormField } from '@/components/admin/FormField';
+import { FormErrorSummary } from '@/components/admin/FormErrorSummary';
+import {
+  CHAR_LIMITS,
+  HELP_TEXT,
+  requiredMaxLength,
+  inputClass,
+} from '@/lib/form-validation';
 
 interface CaseStudyFormData {
   title: string;
@@ -22,9 +31,15 @@ export function CaseStudyForm({ caseStudyId }: { caseStudyId?: string }) {
   const [metrics, setMetrics] = useState<{ label: string; value: string }[]>([]);
   const [images, setImages] = useState<{ url: string; alt: string; caption?: string }[]>([]);
   const [visual, setVisual] = useState('');
+  const [showErrors, setShowErrors] = useState(false);
   const isEdit = !!caseStudyId;
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<CaseStudyFormData>();
+  const { register, handleSubmit, reset, watch, formState: { errors } } = useForm<CaseStudyFormData>();
+
+  const watchTitle = watch('title', '');
+  const watchLocation = watch('location', '');
+  const watchChallenge = watch('challenge', '');
+  const watchResult = watch('result', '');
 
   useEffect(() => {
     if (caseStudyId) {
@@ -50,6 +65,7 @@ export function CaseStudyForm({ caseStudyId }: { caseStudyId?: string }) {
   }, [caseStudyId, reset]);
 
   const onSubmit = async (data: CaseStudyFormData) => {
+    setShowErrors(false);
     setLoading(true);
     try {
       const payload = {
@@ -72,6 +88,7 @@ export function CaseStudyForm({ caseStudyId }: { caseStudyId?: string }) {
       const result = await res.json();
       if (result.success) {
         toast.success(isEdit ? 'Case study updated!' : 'Case study created!');
+        router.refresh();
         router.push('/admin/case-studies');
       } else {
         toast.error(result.error || 'Failed to save');
@@ -83,6 +100,10 @@ export function CaseStudyForm({ caseStudyId }: { caseStudyId?: string }) {
     }
   };
 
+  const onError = () => {
+    setShowErrors(true);
+  };
+
   // Solution helpers
   const addSolutionItem = () => setSolution([...solution, '']);
   const removeSolutionItem = (idx: number) => setSolution(solution.filter((_, i) => i !== idx));
@@ -92,8 +113,10 @@ export function CaseStudyForm({ caseStudyId }: { caseStudyId?: string }) {
     setSolution(updated);
   };
 
+  const errorCount = Object.keys(errors).length;
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 max-w-4xl">
+    <form onSubmit={handleSubmit(onSubmit, onError)} className="space-y-8 max-w-4xl">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button type="button" onClick={() => router.push('/admin/case-studies')} className="p-2 rounded-lg hover:bg-gray-100 text-gray-500">
@@ -108,56 +131,63 @@ export function CaseStudyForm({ caseStudyId }: { caseStudyId?: string }) {
         </button>
       </div>
 
+      <FormErrorSummary errorCount={errorCount} show={showErrors} />
+
       {/* Basic Info */}
       <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
         <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider" style={{ fontFamily: 'system-ui' }}>Basic Information</h2>
 
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+          <FormField label="Title" required error={errors.title?.message}
+            counter={<CharacterCounter current={watchTitle?.length || 0} max={CHAR_LIMITS.title} />}>
             <input
-              {...register('title', { required: 'Title is required' })}
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300"
+              {...register('title', requiredMaxLength(CHAR_LIMITS.title))}
+              maxLength={CHAR_LIMITS.title}
+              className={inputClass(!!errors.title)}
               style={{ fontFamily: 'system-ui' }}
             />
-            {errors.title && <p className="text-xs text-red-500 mt-1">{errors.title.message}</p>}
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+          </FormField>
+          <FormField label="Location" required error={errors.location?.message}
+            counter={<CharacterCounter current={watchLocation?.length || 0} max={CHAR_LIMITS.title} />}>
             <input
-              {...register('location', { required: 'Location is required' })}
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300"
+              {...register('location', requiredMaxLength(CHAR_LIMITS.title))}
+              maxLength={CHAR_LIMITS.title}
+              className={inputClass(!!errors.location)}
               style={{ fontFamily: 'system-ui' }}
             />
-            {errors.location && <p className="text-xs text-red-500 mt-1">{errors.location.message}</p>}
-          </div>
+          </FormField>
         </div>
 
-        <ImageUploadField
-          label="Visual / Hero Image"
-          value={visual}
-          onChange={setVisual}
-          folder="case-studies"
-        />
+        <div>
+          <ImageUploadField
+            label="Visual / Hero Image"
+            value={visual}
+            onChange={setVisual}
+            folder="case-studies"
+          />
+          <p className="text-gray-400 text-xs mt-1 italic" style={{ fontFamily: 'system-ui' }}>{HELP_TEXT.heroImage}</p>
+        </div>
       </div>
 
       {/* Content */}
       <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
         <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider" style={{ fontFamily: 'system-ui' }}>Content</h2>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Challenge</label>
+        <FormField label="Challenge" required error={errors.challenge?.message}
+          counter={<CharacterCounter current={watchChallenge?.length || 0} max={CHAR_LIMITS.longText} />}>
           <textarea
-            {...register('challenge', { required: 'Challenge is required' })}
+            {...register('challenge', requiredMaxLength(CHAR_LIMITS.longText))}
+            maxLength={CHAR_LIMITS.longText}
             rows={4}
-            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300 resize-y"
+            className={`${inputClass(!!errors.challenge)} resize-y`}
             style={{ fontFamily: 'system-ui' }}
           />
-          {errors.challenge && <p className="text-xs text-red-500 mt-1">{errors.challenge.message}</p>}
-        </div>
+        </FormField>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Solution (bullet points)</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'system-ui' }}>
+            Solution (bullet points)<span className="text-red-500 ml-1">*</span>
+          </label>
           <div className="space-y-2">
             {solution.map((item, idx) => (
               <div key={idx} className="flex gap-2">
@@ -165,7 +195,8 @@ export function CaseStudyForm({ caseStudyId }: { caseStudyId?: string }) {
                   type="text"
                   value={item}
                   onChange={(e) => updateSolutionItem(idx, e.target.value)}
-                  className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300"
+                  maxLength={CHAR_LIMITS.tagline}
+                  className={inputClass()}
                   style={{ fontFamily: 'system-ui' }}
                   placeholder="Solution step..."
                 />
@@ -180,16 +211,16 @@ export function CaseStudyForm({ caseStudyId }: { caseStudyId?: string }) {
           </div>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Result</label>
+        <FormField label="Result" required error={errors.result?.message}
+          counter={<CharacterCounter current={watchResult?.length || 0} max={CHAR_LIMITS.longText} />}>
           <textarea
-            {...register('result', { required: 'Result is required' })}
+            {...register('result', requiredMaxLength(CHAR_LIMITS.longText))}
+            maxLength={CHAR_LIMITS.longText}
             rows={4}
-            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300 resize-y"
+            className={`${inputClass(!!errors.result)} resize-y`}
             style={{ fontFamily: 'system-ui' }}
           />
-          {errors.result && <p className="text-xs text-red-500 mt-1">{errors.result.message}</p>}
-        </div>
+        </FormField>
       </div>
 
       {/* Metrics */}
@@ -205,8 +236,9 @@ export function CaseStudyForm({ caseStudyId }: { caseStudyId?: string }) {
                     type="text"
                     value={metric.label}
                     onChange={(e) => { const u = [...metrics]; u[idx] = { ...u[idx], label: e.target.value }; setMetrics(u); }}
+                    maxLength={CHAR_LIMITS.title}
                     placeholder="e.g. Cost Savings"
-                    className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300"
+                    className={inputClass()}
                     style={{ fontFamily: 'system-ui' }}
                   />
                 </div>
@@ -216,8 +248,9 @@ export function CaseStudyForm({ caseStudyId }: { caseStudyId?: string }) {
                     type="text"
                     value={metric.value}
                     onChange={(e) => { const u = [...metrics]; u[idx] = { ...u[idx], value: e.target.value }; setMetrics(u); }}
+                    maxLength={CHAR_LIMITS.title}
                     placeholder="e.g. 40%"
-                    className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300"
+                    className={inputClass()}
                     style={{ fontFamily: 'system-ui' }}
                   />
                 </div>

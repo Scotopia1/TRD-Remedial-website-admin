@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { successResponse, errorResponse, handleApiError } from '@/lib/api-utils';
+import { triggerRevalidation } from '@/lib/revalidate';
 
 type RouteContext = {
   params: Promise<{ key: string }>;
@@ -58,6 +59,8 @@ export async function PUT(request: NextRequest, context: RouteContext) {
       },
     });
 
+    triggerRevalidation('content');
+
     return successResponse(updated);
   } catch (error) {
     return handleApiError(error);
@@ -79,6 +82,8 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
 
     // Delete the content record
     await prisma.pageContent.delete({ where: { key } });
+
+    triggerRevalidation('content');
 
     return successResponse({ message: 'Content deleted successfully' });
   } catch (error) {

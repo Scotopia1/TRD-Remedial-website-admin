@@ -6,6 +6,17 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { Save, ArrowLeft, Plus, X } from 'lucide-react';
 import { ImageUploadField } from './ImageUploadField';
+import { CharacterCounter } from './CharacterCounter';
+import { FormField } from './FormField';
+import { FormErrorSummary } from './FormErrorSummary';
+import {
+  CHAR_LIMITS,
+  MESSAGES,
+  requiredMaxLength,
+  optionalMaxLength,
+  urlRules,
+  inputClass,
+} from '@/lib/form-validation';
 
 interface TeamFormData {
   name: string;
@@ -45,6 +56,7 @@ function TagInput({ label, items, onChange }: { label: string; items: string[]; 
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addItem())}
+          maxLength={CHAR_LIMITS.keyword}
           className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300"
           placeholder={`Add ${label.toLowerCase().replace(/s$/, '')}...`}
           style={{ fontFamily: 'system-ui' }}
@@ -63,9 +75,15 @@ export function TeamForm({ memberId }: { memberId?: string }) {
   const [roles, setRoles] = useState<string[]>([]);
   const [expertise, setExpertise] = useState<string[]>([]);
   const [image, setImage] = useState('');
+  const [showErrors, setShowErrors] = useState(false);
   const isEdit = !!memberId;
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<TeamFormData>();
+  const { register, handleSubmit, reset, watch, formState: { errors } } = useForm<TeamFormData>();
+
+  const watchName = watch('name', '');
+  const watchTitle = watch('title', '');
+  const watchBio = watch('bio', '');
+  const watchLinkedIn = watch('linkedIn', '');
 
   useEffect(() => {
     if (memberId) {
@@ -91,6 +109,7 @@ export function TeamForm({ memberId }: { memberId?: string }) {
   }, [memberId, reset]);
 
   const onSubmit = async (data: TeamFormData) => {
+    setShowErrors(false);
     setLoading(true);
     try {
       const payload = { ...data, image, roles, expertise, order: data.order, blurDataURL: data.blurDataURL || undefined };
@@ -106,6 +125,7 @@ export function TeamForm({ memberId }: { memberId?: string }) {
       const result = await res.json();
       if (result.success) {
         toast.success(isEdit ? 'Member updated!' : 'Member created!');
+        router.refresh();
         router.push('/admin/team');
       } else {
         toast.error(result.error || 'Failed to save');
@@ -117,8 +137,14 @@ export function TeamForm({ memberId }: { memberId?: string }) {
     }
   };
 
+  const onError = () => {
+    setShowErrors(true);
+  };
+
+  const errorCount = Object.keys(errors).length;
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 max-w-3xl">
+    <form onSubmit={handleSubmit(onSubmit, onError)} className="space-y-8 max-w-3xl">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button type="button" onClick={() => router.push('/admin/team')} className="p-2 rounded-lg hover:bg-gray-100 text-gray-500"><ArrowLeft size={18} /></button>
@@ -131,17 +157,28 @@ export function TeamForm({ memberId }: { memberId?: string }) {
         </button>
       </div>
 
+      <FormErrorSummary errorCount={errorCount} show={showErrors} />
+
       <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-            <input {...register('name', { required: 'Name is required' })} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300" style={{ fontFamily: 'system-ui' }} />
-            {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name.message}</p>}
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
-            <input {...register('title', { required: true })} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300" style={{ fontFamily: 'system-ui' }} />
-          </div>
+          <FormField label="Name" required error={errors.name?.message}
+            counter={<CharacterCounter current={watchName?.length || 0} max={CHAR_LIMITS.name} />}>
+            <input
+              {...register('name', requiredMaxLength(CHAR_LIMITS.name))}
+              maxLength={CHAR_LIMITS.name}
+              className={inputClass(!!errors.name)}
+              style={{ fontFamily: 'system-ui' }}
+            />
+          </FormField>
+          <FormField label="Title" required error={errors.title?.message}
+            counter={<CharacterCounter current={watchTitle?.length || 0} max={CHAR_LIMITS.title} />}>
+            <input
+              {...register('title', requiredMaxLength(CHAR_LIMITS.title))}
+              maxLength={CHAR_LIMITS.title}
+              className={inputClass(!!errors.title)}
+              style={{ fontFamily: 'system-ui' }}
+            />
+          </FormField>
         </div>
 
         <div className="max-w-xs">
@@ -149,7 +186,7 @@ export function TeamForm({ memberId }: { memberId?: string }) {
           <input
             type="number"
             {...register('order', { valueAsNumber: true })}
-            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300"
+            className={inputClass()}
             style={{ fontFamily: 'system-ui' }}
           />
         </div>
@@ -157,15 +194,26 @@ export function TeamForm({ memberId }: { memberId?: string }) {
         <TagInput label="Roles" items={roles} onChange={setRoles} />
         <TagInput label="Expertise" items={expertise} onChange={setExpertise} />
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Bio</label>
-          <textarea {...register('bio', { required: true })} rows={4} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300 resize-y" style={{ fontFamily: 'system-ui' }} />
-        </div>
+        <FormField label="Bio" required error={errors.bio?.message}
+          counter={<CharacterCounter current={watchBio?.length || 0} max={CHAR_LIMITS.longText} />}>
+          <textarea
+            {...register('bio', requiredMaxLength(CHAR_LIMITS.longText))}
+            maxLength={CHAR_LIMITS.longText}
+            rows={4}
+            className={`${inputClass(!!errors.bio)} resize-y`}
+            style={{ fontFamily: 'system-ui' }}
+          />
+        </FormField>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">LinkedIn URL</label>
-          <input {...register('linkedIn')} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300" style={{ fontFamily: 'system-ui' }} />
-        </div>
+        <FormField label="LinkedIn URL" error={errors.linkedIn?.message}
+          counter={<CharacterCounter current={watchLinkedIn?.length || 0} max={CHAR_LIMITS.url} />}>
+          <input
+            {...register('linkedIn', urlRules())}
+            maxLength={CHAR_LIMITS.url}
+            className={inputClass(!!errors.linkedIn)}
+            style={{ fontFamily: 'system-ui' }}
+          />
+        </FormField>
       </div>
 
       {/* Profile Photo */}
@@ -185,10 +233,10 @@ export function TeamForm({ memberId }: { memberId?: string }) {
             {...register('blurDataURL')}
             rows={2}
             placeholder="data:image/webp;base64,..."
-            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300 resize-y font-mono"
+            className={`${inputClass()} resize-y font-mono`}
             style={{ fontFamily: 'system-ui' }}
           />
-          <p className="text-xs text-gray-400 mt-1" style={{ fontFamily: 'system-ui' }}>Small base64-encoded preview image used as loading placeholder</p>
+          <p className="text-xs text-gray-400 mt-1 italic" style={{ fontFamily: 'system-ui' }}>Small base64-encoded preview image used as loading placeholder</p>
         </div>
       </div>
     </form>

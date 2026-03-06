@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { testimonialUpdateSchema } from '@/lib/validations'
 import { successResponse, errorResponse, handleApiError } from '@/lib/api-utils'
+import { triggerRevalidation } from '@/lib/revalidate'
 
 type RouteContext = {
   params: Promise<{ id: string }>
@@ -38,6 +39,8 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       data: validatedData,
     })
 
+    triggerRevalidation('testimonials')
+
     return successResponse(testimonial)
   } catch (error) {
     return handleApiError(error)
@@ -52,6 +55,8 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
     await prisma.testimonial.delete({
       where: { id },
     })
+
+    triggerRevalidation('testimonials')
 
     return successResponse({ message: 'Testimonial deleted successfully' })
   } catch (error) {

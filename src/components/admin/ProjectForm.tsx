@@ -7,6 +7,19 @@ import { toast } from 'sonner';
 import { Save, ArrowLeft, Plus, X } from 'lucide-react';
 import { ImageUploadField } from './ImageUploadField';
 import { MultiImageUploadField } from './MultiImageUploadField';
+import { CharacterCounter } from './CharacterCounter';
+import { FormField } from './FormField';
+import { FormErrorSummary } from './FormErrorSummary';
+import {
+  CHAR_LIMITS,
+  HELP_TEXT,
+  MESSAGES,
+  requiredMaxLength,
+  optionalMaxLength,
+  slugRules,
+  inputClass,
+  generateSlug,
+} from '@/lib/form-validation';
 
 interface ProjectFormData {
   slug: string;
@@ -38,6 +51,7 @@ export function ProjectForm({ projectId }: { projectId?: string }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [services, setServices] = useState<ServiceOption[]>([]);
+  const [showErrors, setShowErrors] = useState(false);
 
   // Controlled image state
   const [featuredImage, setFeaturedImage] = useState('');
@@ -56,7 +70,23 @@ export function ProjectForm({ projectId }: { projectId?: string }) {
 
   const isEdit = !!projectId;
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<ProjectFormData>();
+  const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<ProjectFormData>();
+
+  const watchName = watch('name', '');
+  const watchSlug = watch('slug', '');
+  const watchTagline = watch('tagline', '');
+  const watchChallenge = watch('challenge', '');
+  const watchSolution = watch('solution', '');
+  const watchResults = watch('results', '');
+  const watchMetaTitle = watch('metaTitle', '');
+  const watchMetaDescription = watch('metaDescription', '');
+
+  // Auto-generate slug from name (only when creating new)
+  useEffect(() => {
+    if (!isEdit && watchName) {
+      setValue('slug', generateSlug(watchName));
+    }
+  }, [watchName, isEdit, setValue]);
 
   useEffect(() => {
     // Load services for dropdown
@@ -114,6 +144,7 @@ export function ProjectForm({ projectId }: { projectId?: string }) {
   }, [projectId, reset]);
 
   const onSubmit = async (data: ProjectFormData) => {
+    setShowErrors(false);
     setLoading(true);
     try {
       const payload = {
@@ -142,6 +173,7 @@ export function ProjectForm({ projectId }: { projectId?: string }) {
       const result = await res.json();
       if (result.success) {
         toast.success(isEdit ? 'Project updated!' : 'Project created!');
+        router.refresh();
         router.push('/admin/projects');
       } else {
         toast.error(result.error || 'Failed to save');
@@ -153,8 +185,14 @@ export function ProjectForm({ projectId }: { projectId?: string }) {
     }
   };
 
+  const onError = () => {
+    setShowErrors(true);
+  };
+
+  const errorCount = Object.keys(errors).length;
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 max-w-4xl">
+    <form onSubmit={handleSubmit(onSubmit, onError)} className="space-y-8 max-w-4xl">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button type="button" onClick={() => router.push('/admin/projects')} className="p-2 rounded-lg hover:bg-gray-100 text-gray-500">
@@ -169,62 +207,102 @@ export function ProjectForm({ projectId }: { projectId?: string }) {
         </button>
       </div>
 
+      <FormErrorSummary errorCount={errorCount} show={showErrors} />
+
       {/* Basic Info */}
       <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
         <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider" style={{ fontFamily: 'system-ui' }}>Basic Information</h2>
 
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Project Name</label>
-            <input {...register('name', { required: 'Name is required' })} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300" style={{ fontFamily: 'system-ui' }} />
-            {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name.message}</p>}
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Slug</label>
-            <input {...register('slug', { required: true })} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300" style={{ fontFamily: 'system-ui' }} />
-          </div>
+          <FormField label="Project Name" required error={errors.name?.message}
+            counter={<CharacterCounter current={watchName?.length || 0} max={CHAR_LIMITS.name} />}>
+            <input
+              {...register('name', requiredMaxLength(CHAR_LIMITS.name))}
+              maxLength={CHAR_LIMITS.name}
+              className={inputClass(!!errors.name)}
+              style={{ fontFamily: 'system-ui' }}
+            />
+          </FormField>
+          <FormField label="Slug" required error={errors.slug?.message} helpText={HELP_TEXT.slug}
+            counter={<CharacterCounter current={watchSlug?.length || 0} max={CHAR_LIMITS.slug} />}>
+            <input
+              {...register('slug', slugRules())}
+              maxLength={CHAR_LIMITS.slug}
+              className={inputClass(!!errors.slug)}
+              style={{ fontFamily: 'system-ui' }}
+            />
+          </FormField>
         </div>
 
         <div className="grid grid-cols-3 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
-            <input {...register('location', { required: true })} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300" style={{ fontFamily: 'system-ui' }} />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
-            <input type="text" {...register('date', { required: true })} placeholder="e.g., 2026 or June 23, 2025" className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300" style={{ fontFamily: 'system-ui' }} />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Service</label>
-            <select {...register('serviceId', { required: true })} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300 bg-white" style={{ fontFamily: 'system-ui' }}>
+          <FormField label="Location" required error={errors.location?.message}>
+            <input
+              {...register('location', { required: MESSAGES.required })}
+              className={inputClass(!!errors.location)}
+              style={{ fontFamily: 'system-ui' }}
+            />
+          </FormField>
+          <FormField label="Date" required error={errors.date?.message}>
+            <input
+              type="text"
+              {...register('date', { required: MESSAGES.required })}
+              placeholder="e.g., 2026 or June 23, 2025"
+              className={inputClass(!!errors.date)}
+              style={{ fontFamily: 'system-ui' }}
+            />
+          </FormField>
+          <FormField label="Service" required error={errors.serviceId?.message}>
+            <select
+              {...register('serviceId', { required: MESSAGES.required })}
+              className={`${inputClass(!!errors.serviceId)} bg-white`}
+              style={{ fontFamily: 'system-ui' }}
+            >
               <option value="">Select service...</option>
               {services.map((s) => (
                 <option key={s.id} value={s.id}>{s.title}</option>
               ))}
             </select>
-          </div>
+          </FormField>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Service Type</label>
-            <input {...register('serviceType', { required: true })} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300" style={{ fontFamily: 'system-ui' }} />
-          </div>
+          <FormField label="Service Type" required error={errors.serviceType?.message}>
+            <input
+              {...register('serviceType', { required: MESSAGES.required })}
+              className={inputClass(!!errors.serviceType)}
+              style={{ fontFamily: 'system-ui' }}
+            />
+          </FormField>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Categories (comma-separated)</label>
-            <input {...register('categories')} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300" style={{ fontFamily: 'system-ui' }} placeholder="Commercial, Structural" />
+            <input
+              {...register('categories')}
+              className={inputClass()}
+              style={{ fontFamily: 'system-ui' }}
+              placeholder="Commercial, Structural"
+            />
           </div>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Tagline</label>
-          <input {...register('tagline', { required: true })} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300" style={{ fontFamily: 'system-ui' }} />
-        </div>
+        <FormField label="Tagline" required error={errors.tagline?.message} helpText={HELP_TEXT.shortDescription}
+          counter={<CharacterCounter current={watchTagline?.length || 0} max={CHAR_LIMITS.tagline} />}>
+          <input
+            {...register('tagline', requiredMaxLength(CHAR_LIMITS.tagline))}
+            maxLength={CHAR_LIMITS.tagline}
+            className={inputClass(!!errors.tagline)}
+            style={{ fontFamily: 'system-ui' }}
+          />
+        </FormField>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Order</label>
-            <input type="number" {...register('order', { valueAsNumber: true })} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300" style={{ fontFamily: 'system-ui' }} />
+            <input
+              type="number"
+              {...register('order', { valueAsNumber: true })}
+              className={inputClass()}
+              style={{ fontFamily: 'system-ui' }}
+            />
           </div>
           <div className="flex items-end">
             <label className="flex items-center gap-2 cursor-pointer">
@@ -239,27 +317,53 @@ export function ProjectForm({ projectId }: { projectId?: string }) {
       <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
         <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider" style={{ fontFamily: 'system-ui' }}>Project Content</h2>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Challenge</label>
-          <textarea {...register('challenge', { required: true })} rows={4} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300 resize-y" style={{ fontFamily: 'system-ui' }} />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Solution</label>
-          <textarea {...register('solution', { required: true })} rows={4} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300 resize-y" style={{ fontFamily: 'system-ui' }} />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Results</label>
-          <textarea {...register('results', { required: true })} rows={4} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300 resize-y" style={{ fontFamily: 'system-ui' }} />
-        </div>
+        <FormField label="Challenge" required error={errors.challenge?.message}
+          counter={<CharacterCounter current={watchChallenge?.length || 0} max={CHAR_LIMITS.longText} />}>
+          <textarea
+            {...register('challenge', requiredMaxLength(CHAR_LIMITS.longText))}
+            maxLength={CHAR_LIMITS.longText}
+            rows={4}
+            className={`${inputClass(!!errors.challenge)} resize-y`}
+            style={{ fontFamily: 'system-ui' }}
+          />
+        </FormField>
+        <FormField label="Solution" required error={errors.solution?.message}
+          counter={<CharacterCounter current={watchSolution?.length || 0} max={CHAR_LIMITS.longText} />}>
+          <textarea
+            {...register('solution', requiredMaxLength(CHAR_LIMITS.longText))}
+            maxLength={CHAR_LIMITS.longText}
+            rows={4}
+            className={`${inputClass(!!errors.solution)} resize-y`}
+            style={{ fontFamily: 'system-ui' }}
+          />
+        </FormField>
+        <FormField label="Results" required error={errors.results?.message}
+          counter={<CharacterCounter current={watchResults?.length || 0} max={CHAR_LIMITS.longText} />}>
+          <textarea
+            {...register('results', requiredMaxLength(CHAR_LIMITS.longText))}
+            maxLength={CHAR_LIMITS.longText}
+            rows={4}
+            className={`${inputClass(!!errors.results)} resize-y`}
+            style={{ fontFamily: 'system-ui' }}
+          />
+        </FormField>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Timeline</label>
-            <input {...register('timeline')} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300" style={{ fontFamily: 'system-ui' }} />
+            <input
+              {...register('timeline')}
+              className={inputClass()}
+              style={{ fontFamily: 'system-ui' }}
+            />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Budget</label>
-            <input {...register('budget')} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300" style={{ fontFamily: 'system-ui' }} />
+            <input
+              {...register('budget')}
+              className={inputClass()}
+              style={{ fontFamily: 'system-ui' }}
+            />
           </div>
         </div>
       </div>
@@ -281,12 +385,15 @@ export function ProjectForm({ projectId }: { projectId?: string }) {
             onChange={setThumbnailImage}
             folder="projects"
           />
-          <ImageUploadField
-            label="Hero Image"
-            value={heroImage}
-            onChange={setHeroImage}
-            folder="projects"
-          />
+          <div>
+            <ImageUploadField
+              label="Hero Image"
+              value={heroImage}
+              onChange={setHeroImage}
+              folder="projects"
+            />
+            <p className="text-gray-400 text-xs mt-1 italic" style={{ fontFamily: 'system-ui' }}>{HELP_TEXT.heroImage}</p>
+          </div>
         </div>
       </div>
 
@@ -314,8 +421,9 @@ export function ProjectForm({ projectId }: { projectId?: string }) {
                     type="text"
                     value={stat.value}
                     onChange={(e) => { const u = [...stats]; u[idx] = { ...u[idx], value: e.target.value }; setStats(u); }}
+                    maxLength={CHAR_LIMITS.title}
                     placeholder="e.g. 3 months"
-                    className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300"
+                    className={inputClass()}
                     style={{ fontFamily: 'system-ui' }}
                   />
                 </div>
@@ -325,8 +433,9 @@ export function ProjectForm({ projectId }: { projectId?: string }) {
                     type="text"
                     value={stat.label}
                     onChange={(e) => { const u = [...stats]; u[idx] = { ...u[idx], label: e.target.value }; setStats(u); }}
+                    maxLength={CHAR_LIMITS.title}
                     placeholder="e.g. Project Duration"
-                    className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300"
+                    className={inputClass()}
                     style={{ fontFamily: 'system-ui' }}
                   />
                 </div>
@@ -351,10 +460,14 @@ export function ProjectForm({ projectId }: { projectId?: string }) {
             <textarea
               value={testimonial.quote}
               onChange={(e) => setTestimonial({ ...testimonial, quote: e.target.value })}
+              maxLength={CHAR_LIMITS.quote}
               rows={3}
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300 resize-y"
+              className={`${inputClass()} resize-y`}
               style={{ fontFamily: 'system-ui' }}
             />
+            <div className="mt-1">
+              <CharacterCounter current={testimonial.quote.length} max={CHAR_LIMITS.quote} />
+            </div>
           </div>
           <div className="grid grid-cols-3 gap-3">
             <div>
@@ -363,7 +476,8 @@ export function ProjectForm({ projectId }: { projectId?: string }) {
                 type="text"
                 value={testimonial.author}
                 onChange={(e) => setTestimonial({ ...testimonial, author: e.target.value })}
-                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300"
+                maxLength={CHAR_LIMITS.name}
+                className={inputClass()}
                 style={{ fontFamily: 'system-ui' }}
               />
             </div>
@@ -373,7 +487,8 @@ export function ProjectForm({ projectId }: { projectId?: string }) {
                 type="text"
                 value={testimonial.role}
                 onChange={(e) => setTestimonial({ ...testimonial, role: e.target.value })}
-                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300"
+                maxLength={CHAR_LIMITS.title}
+                className={inputClass()}
                 style={{ fontFamily: 'system-ui' }}
               />
             </div>
@@ -383,7 +498,8 @@ export function ProjectForm({ projectId }: { projectId?: string }) {
                 type="text"
                 value={testimonial.company}
                 onChange={(e) => setTestimonial({ ...testimonial, company: e.target.value })}
-                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300"
+                maxLength={CHAR_LIMITS.title}
+                className={inputClass()}
                 style={{ fontFamily: 'system-ui' }}
               />
             </div>
@@ -408,7 +524,8 @@ export function ProjectForm({ projectId }: { projectId?: string }) {
                 type="text"
                 value={beforeImageAlt}
                 onChange={(e) => setBeforeImageAlt(e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300"
+                maxLength={CHAR_LIMITS.tagline}
+                className={inputClass()}
                 style={{ fontFamily: 'system-ui' }}
               />
             </div>
@@ -426,7 +543,8 @@ export function ProjectForm({ projectId }: { projectId?: string }) {
                 type="text"
                 value={afterImageAlt}
                 onChange={(e) => setAfterImageAlt(e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300"
+                maxLength={CHAR_LIMITS.tagline}
+                className={inputClass()}
                 style={{ fontFamily: 'system-ui' }}
               />
             </div>
@@ -444,10 +562,10 @@ export function ProjectForm({ projectId }: { projectId?: string }) {
             onChange={(e) => setRelatedProjectSlugs(e.target.value)}
             rows={4}
             placeholder={"concrete-restoration-downtown\nstructural-repair-westside"}
-            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300 resize-y"
+            className={`${inputClass()} resize-y`}
             style={{ fontFamily: 'system-ui' }}
           />
-          <p className="text-xs text-gray-400 mt-1">Enter one project slug per line. These will be linked as related projects.</p>
+          <p className="text-xs text-gray-400 mt-1" style={{ fontFamily: 'system-ui' }}>Enter one project slug per line. These will be linked as related projects.</p>
         </div>
       </div>
 
@@ -455,14 +573,25 @@ export function ProjectForm({ projectId }: { projectId?: string }) {
       <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
         <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider" style={{ fontFamily: 'system-ui' }}>SEO</h2>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Meta Title</label>
-          <input {...register('metaTitle')} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300" style={{ fontFamily: 'system-ui' }} />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Meta Description</label>
-          <textarea {...register('metaDescription')} rows={2} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300 resize-y" style={{ fontFamily: 'system-ui' }} />
-        </div>
+        <FormField label="Meta Title" error={errors.metaTitle?.message} helpText={HELP_TEXT.metaTitle}
+          counter={<CharacterCounter current={watchMetaTitle?.length || 0} max={CHAR_LIMITS.metaTitle} />}>
+          <input
+            {...register('metaTitle', optionalMaxLength(CHAR_LIMITS.metaTitle))}
+            maxLength={CHAR_LIMITS.metaTitle}
+            className={inputClass(!!errors.metaTitle)}
+            style={{ fontFamily: 'system-ui' }}
+          />
+        </FormField>
+        <FormField label="Meta Description" error={errors.metaDescription?.message} helpText={HELP_TEXT.metaDescription}
+          counter={<CharacterCounter current={watchMetaDescription?.length || 0} max={CHAR_LIMITS.metaDescription} />}>
+          <textarea
+            {...register('metaDescription', optionalMaxLength(CHAR_LIMITS.metaDescription))}
+            maxLength={CHAR_LIMITS.metaDescription}
+            rows={2}
+            className={`${inputClass(!!errors.metaDescription)} resize-y`}
+            style={{ fontFamily: 'system-ui' }}
+          />
+        </FormField>
       </div>
     </form>
   );

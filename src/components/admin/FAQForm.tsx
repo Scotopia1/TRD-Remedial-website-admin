@@ -5,6 +5,14 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { Save, ArrowLeft, Plus, X } from 'lucide-react';
+import { CharacterCounter } from './CharacterCounter';
+import { FormField } from './FormField';
+import { FormErrorSummary } from './FormErrorSummary';
+import {
+  CHAR_LIMITS,
+  requiredMaxLength,
+  inputClass,
+} from '@/lib/form-validation';
 
 interface FAQFormData {
   question: string;
@@ -19,11 +27,15 @@ export function FAQForm({ faqId }: { faqId?: string }) {
   const [loading, setLoading] = useState(false);
   const [keywords, setKeywords] = useState<string[]>([]);
   const [kwInput, setKwInput] = useState('');
+  const [showErrors, setShowErrors] = useState(false);
   const isEdit = !!faqId;
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<FAQFormData>({
+  const { register, handleSubmit, reset, watch, formState: { errors } } = useForm<FAQFormData>({
     defaultValues: { category: 'process', order: 0, isActive: true },
   });
+
+  const watchQuestion = watch('question', '');
+  const watchAnswer = watch('answer', '');
 
   useEffect(() => {
     if (faqId) {
@@ -53,6 +65,7 @@ export function FAQForm({ faqId }: { faqId?: string }) {
   };
 
   const onSubmit = async (data: FAQFormData) => {
+    setShowErrors(false);
     setLoading(true);
     try {
       const payload = { ...data, keywords };
@@ -68,6 +81,7 @@ export function FAQForm({ faqId }: { faqId?: string }) {
       const result = await res.json();
       if (result.success) {
         toast.success(isEdit ? 'FAQ updated!' : 'FAQ created!');
+        router.refresh();
         router.push('/admin/faqs');
       } else {
         toast.error(result.error || 'Failed to save');
@@ -79,8 +93,14 @@ export function FAQForm({ faqId }: { faqId?: string }) {
     }
   };
 
+  const onError = () => {
+    setShowErrors(true);
+  };
+
+  const errorCount = Object.keys(errors).length;
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 max-w-3xl">
+    <form onSubmit={handleSubmit(onSubmit, onError)} className="space-y-6 max-w-3xl">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button type="button" onClick={() => router.push('/admin/faqs')} className="p-2 rounded-lg hover:bg-gray-100 text-gray-500"><ArrowLeft size={18} /></button>
@@ -93,22 +113,38 @@ export function FAQForm({ faqId }: { faqId?: string }) {
         </button>
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Question</label>
-          <input {...register('question', { required: 'Question is required' })} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300" style={{ fontFamily: 'system-ui' }} />
-          {errors.question && <p className="text-xs text-red-500 mt-1">{errors.question.message}</p>}
-        </div>
+      <FormErrorSummary errorCount={errorCount} show={showErrors} />
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Answer</label>
-          <textarea {...register('answer', { required: 'Answer is required' })} rows={5} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300 resize-y" style={{ fontFamily: 'system-ui' }} />
-        </div>
+      <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
+        <FormField label="Question" required error={errors.question?.message}
+          counter={<CharacterCounter current={watchQuestion?.length || 0} max={CHAR_LIMITS.tagline} />}>
+          <input
+            {...register('question', requiredMaxLength(CHAR_LIMITS.tagline))}
+            maxLength={CHAR_LIMITS.tagline}
+            className={inputClass(!!errors.question)}
+            style={{ fontFamily: 'system-ui' }}
+          />
+        </FormField>
+
+        <FormField label="Answer" required error={errors.answer?.message}
+          counter={<CharacterCounter current={watchAnswer?.length || 0} max={CHAR_LIMITS.longText} />}>
+          <textarea
+            {...register('answer', requiredMaxLength(CHAR_LIMITS.longText))}
+            maxLength={CHAR_LIMITS.longText}
+            rows={5}
+            className={`${inputClass(!!errors.answer)} resize-y`}
+            style={{ fontFamily: 'system-ui' }}
+          />
+        </FormField>
 
         <div className="grid grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-            <select {...register('category')} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300 bg-white" style={{ fontFamily: 'system-ui' }}>
+            <select
+              {...register('category')}
+              className={`${inputClass()} bg-white`}
+              style={{ fontFamily: 'system-ui' }}
+            >
               <option value="process">Process</option>
               <option value="technical">Technical</option>
               <option value="services">Services</option>
@@ -116,7 +152,12 @@ export function FAQForm({ faqId }: { faqId?: string }) {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Order</label>
-            <input type="number" {...register('order', { valueAsNumber: true })} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300" style={{ fontFamily: 'system-ui' }} />
+            <input
+              type="number"
+              {...register('order', { valueAsNumber: true })}
+              className={inputClass()}
+              style={{ fontFamily: 'system-ui' }}
+            />
           </div>
           <div className="flex items-end">
             <label className="flex items-center gap-2 cursor-pointer">
@@ -143,12 +184,14 @@ export function FAQForm({ faqId }: { faqId?: string }) {
               value={kwInput}
               onChange={(e) => setKwInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addKeyword())}
+              maxLength={CHAR_LIMITS.keyword}
               className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300"
               placeholder="Add keyword..."
               style={{ fontFamily: 'system-ui' }}
             />
             <button type="button" onClick={addKeyword} className="px-3 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50"><Plus size={14} /></button>
           </div>
+          <p className="text-gray-400 text-xs mt-1 italic" style={{ fontFamily: 'system-ui' }}>Max {CHAR_LIMITS.keyword} characters per keyword</p>
         </div>
       </div>
     </form>

@@ -5,6 +5,19 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { Save, Loader2, Plus, X, ChevronUp, ChevronDown } from 'lucide-react';
 import { ImageUploadField } from '@/components/admin/ImageUploadField';
+import { CharacterCounter } from '@/components/admin/CharacterCounter';
+import { FormField } from '@/components/admin/FormField';
+import { FormErrorSummary } from '@/components/admin/FormErrorSummary';
+import {
+  CHAR_LIMITS,
+  HELP_TEXT,
+  requiredMaxLength,
+  optionalMaxLength,
+  emailRules,
+  phoneRules,
+  urlRules,
+  inputClass,
+} from '@/lib/form-validation';
 
 interface SettingsData {
   contactEmail: string;
@@ -35,6 +48,7 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('company');
+  const [showErrors, setShowErrors] = useState(false);
 
   // Controlled image state for SEO images
   const [ogImage, setOgImage] = useState('');
@@ -43,7 +57,28 @@ export default function SettingsPage() {
   // Navigation links state
   const [navLinks, setNavLinks] = useState<{ label: string; href: string }[]>([]);
 
-  const { register, handleSubmit, reset } = useForm<SettingsData>();
+  const { register, handleSubmit, reset, watch, formState: { errors } } = useForm<SettingsData>();
+
+  const watchCompanyName = watch('companyName', '');
+  const watchCompanyFullName = watch('companyFullName', '');
+  const watchTagline = watch('tagline', '');
+  const watchSubTagline = watch('subTagline', '');
+  const watchValueProp = watch('valueProposition', '');
+  const watchBannerText = watch('bannerText', '');
+  const watchCopyright = watch('copyrightText', '');
+  const watchContactEmail = watch('contactEmail', '');
+  const watchContactPhone = watch('contactPhone', '');
+  const watchEmPhone1 = watch('emergencyPhone1', '');
+  const watchEmPhone2 = watch('emergencyPhone2', '');
+  const watchAddress = watch('contactAddress', '');
+  const watchHours = watch('businessHours', '');
+  const watchFooterCta = watch('footerCta', '');
+  const watchFooterDesc = watch('footerDescription', '');
+  const watchSiteTitle = watch('siteTitle', '');
+  const watchSiteDesc = watch('siteDescription', '');
+  const watchLinkedIn = watch('socialLinkedIn', '');
+  const watchFacebook = watch('socialFacebook', '');
+  const watchInstagram = watch('socialInstagram', '');
 
   useEffect(() => {
     fetch('/api/admin/settings')
@@ -67,6 +102,7 @@ export default function SettingsPage() {
   }, [reset]);
 
   const onSubmit = async (data: SettingsData) => {
+    setShowErrors(false);
     setSaving(true);
     try {
       const res = await fetch('/api/admin/settings', {
@@ -85,6 +121,10 @@ export default function SettingsPage() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const onError = () => {
+    setShowErrors(true);
   };
 
   const tabs = [
@@ -118,10 +158,12 @@ export default function SettingsPage() {
     setNavLinks([...navLinks, { label: '', href: '/' }]);
   };
 
+  const errorCount = Object.keys(errors).length;
+
   if (loading) return <div className="text-center py-12 text-gray-500">Loading settings...</div>;
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 max-w-3xl">
+    <form onSubmit={handleSubmit(onSubmit, onError)} className="space-y-6 max-w-3xl">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900" style={{ fontSize: '1.5rem', lineHeight: '2rem', textTransform: 'none', fontFamily: 'system-ui' }}>Site Settings</h1>
         <button type="submit" disabled={saving} className="flex items-center gap-2 px-4 py-2 bg-[#1a1a1a] text-white rounded-lg hover:bg-[#333] text-sm disabled:opacity-50" style={{ textTransform: 'none', fontFamily: 'system-ui' }}>
@@ -129,6 +171,8 @@ export default function SettingsPage() {
           {saving ? 'Saving...' : 'Save Settings'}
         </button>
       </div>
+
+      <FormErrorSummary errorCount={errorCount} show={showErrors} />
 
       {/* Tabs */}
       <div className="flex gap-2 border-b border-gray-200">
@@ -149,128 +193,219 @@ export default function SettingsPage() {
       {activeTab === 'company' && (
         <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Company Name</label>
-              <input {...register('companyName')} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300" style={{ fontFamily: 'system-ui' }} />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-              <input {...register('companyFullName')} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300" style={{ fontFamily: 'system-ui' }} />
-            </div>
+            <FormField label="Company Name" required error={errors.companyName?.message}
+              counter={<CharacterCounter current={watchCompanyName?.length || 0} max={CHAR_LIMITS.title} />}>
+              <input
+                {...register('companyName', requiredMaxLength(CHAR_LIMITS.title))}
+                maxLength={CHAR_LIMITS.title}
+                className={inputClass(!!errors.companyName)}
+                style={{ fontFamily: 'system-ui' }}
+              />
+            </FormField>
+            <FormField label="Full Name"
+              counter={<CharacterCounter current={watchCompanyFullName?.length || 0} max={CHAR_LIMITS.tagline} />}>
+              <input
+                {...register('companyFullName', optionalMaxLength(CHAR_LIMITS.tagline))}
+                maxLength={CHAR_LIMITS.tagline}
+                className={inputClass()}
+                style={{ fontFamily: 'system-ui' }}
+              />
+            </FormField>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Tagline</label>
-            <input {...register('tagline')} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300" style={{ fontFamily: 'system-ui' }} />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Sub Tagline</label>
-            <input {...register('subTagline')} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300" style={{ fontFamily: 'system-ui' }} />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Value Proposition</label>
-            <input {...register('valueProposition')} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300" style={{ fontFamily: 'system-ui' }} />
-          </div>
+          <FormField label="Tagline"
+            counter={<CharacterCounter current={watchTagline?.length || 0} max={CHAR_LIMITS.tagline} />}>
+            <input
+              {...register('tagline', optionalMaxLength(CHAR_LIMITS.tagline))}
+              maxLength={CHAR_LIMITS.tagline}
+              className={inputClass()}
+              style={{ fontFamily: 'system-ui' }}
+            />
+          </FormField>
+          <FormField label="Sub Tagline"
+            counter={<CharacterCounter current={watchSubTagline?.length || 0} max={CHAR_LIMITS.tagline} />}>
+            <input
+              {...register('subTagline', optionalMaxLength(CHAR_LIMITS.tagline))}
+              maxLength={CHAR_LIMITS.tagline}
+              className={inputClass()}
+              style={{ fontFamily: 'system-ui' }}
+            />
+          </FormField>
+          <FormField label="Value Proposition"
+            counter={<CharacterCounter current={watchValueProp?.length || 0} max={CHAR_LIMITS.tagline} />}>
+            <input
+              {...register('valueProposition', optionalMaxLength(CHAR_LIMITS.tagline))}
+              maxLength={CHAR_LIMITS.tagline}
+              className={inputClass()}
+              style={{ fontFamily: 'system-ui' }}
+            />
+          </FormField>
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Parent Company</label>
-              <input {...register('parentCompanyName')} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300" style={{ fontFamily: 'system-ui' }} />
-            </div>
+            <FormField label="Parent Company"
+              counter={<CharacterCounter current={watch('parentCompanyName', '')?.length || 0} max={CHAR_LIMITS.title} />}>
+              <input
+                {...register('parentCompanyName', optionalMaxLength(CHAR_LIMITS.title))}
+                maxLength={CHAR_LIMITS.title}
+                className={inputClass()}
+                style={{ fontFamily: 'system-ui' }}
+              />
+            </FormField>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Established Year</label>
-              <input {...register('parentCompanyYear')} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300" style={{ fontFamily: 'system-ui' }} />
+              <input
+                {...register('parentCompanyYear')}
+                className={inputClass()}
+                style={{ fontFamily: 'system-ui' }}
+              />
             </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Banner Text</label>
-            <input {...register('bannerText')} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300" style={{ fontFamily: 'system-ui' }} />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Copyright Text</label>
-            <input {...register('copyrightText')} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300" style={{ fontFamily: 'system-ui' }} />
-          </div>
+          <FormField label="Banner Text"
+            counter={<CharacterCounter current={watchBannerText?.length || 0} max={CHAR_LIMITS.tagline} />}>
+            <input
+              {...register('bannerText', optionalMaxLength(CHAR_LIMITS.tagline))}
+              maxLength={CHAR_LIMITS.tagline}
+              className={inputClass()}
+              style={{ fontFamily: 'system-ui' }}
+            />
+          </FormField>
+          <FormField label="Copyright Text"
+            counter={<CharacterCounter current={watchCopyright?.length || 0} max={CHAR_LIMITS.tagline} />}>
+            <input
+              {...register('copyrightText', optionalMaxLength(CHAR_LIMITS.tagline))}
+              maxLength={CHAR_LIMITS.tagline}
+              className={inputClass()}
+              style={{ fontFamily: 'system-ui' }}
+            />
+          </FormField>
         </div>
       )}
 
       {/* Contact Tab */}
       {activeTab === 'contact' && (
         <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <input {...register('contactEmail')} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300" style={{ fontFamily: 'system-ui' }} />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-            <input {...register('contactPhone')} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300" style={{ fontFamily: 'system-ui' }} />
-          </div>
+          <FormField label="Email" required error={errors.contactEmail?.message}
+            counter={<CharacterCounter current={watchContactEmail?.length || 0} max={CHAR_LIMITS.email} />}>
+            <input
+              {...register('contactEmail', emailRules(true))}
+              maxLength={CHAR_LIMITS.email}
+              className={inputClass(!!errors.contactEmail)}
+              style={{ fontFamily: 'system-ui' }}
+            />
+          </FormField>
+          <FormField label="Phone" required error={errors.contactPhone?.message}
+            counter={<CharacterCounter current={watchContactPhone?.length || 0} max={CHAR_LIMITS.phone} />}>
+            <input
+              {...register('contactPhone', phoneRules(true))}
+              maxLength={CHAR_LIMITS.phone}
+              className={inputClass(!!errors.contactPhone)}
+              style={{ fontFamily: 'system-ui' }}
+            />
+          </FormField>
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Emergency Phone 1</label>
-              <input {...register('emergencyPhone1')} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300" style={{ fontFamily: 'system-ui' }} />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Emergency Phone 2</label>
-              <input {...register('emergencyPhone2')} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300" style={{ fontFamily: 'system-ui' }} />
-            </div>
+            <FormField label="Emergency Phone 1" error={errors.emergencyPhone1?.message}
+              counter={<CharacterCounter current={watchEmPhone1?.length || 0} max={CHAR_LIMITS.phone} />}>
+              <input
+                {...register('emergencyPhone1', phoneRules())}
+                maxLength={CHAR_LIMITS.phone}
+                className={inputClass(!!errors.emergencyPhone1)}
+                style={{ fontFamily: 'system-ui' }}
+              />
+            </FormField>
+            <FormField label="Emergency Phone 2" error={errors.emergencyPhone2?.message}
+              counter={<CharacterCounter current={watchEmPhone2?.length || 0} max={CHAR_LIMITS.phone} />}>
+              <input
+                {...register('emergencyPhone2', phoneRules())}
+                maxLength={CHAR_LIMITS.phone}
+                className={inputClass(!!errors.emergencyPhone2)}
+                style={{ fontFamily: 'system-ui' }}
+              />
+            </FormField>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
-            <textarea {...register('contactAddress')} rows={2} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300 resize-y" style={{ fontFamily: 'system-ui' }} />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Business Hours</label>
-            <input {...register('businessHours')} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300" style={{ fontFamily: 'system-ui' }} />
-          </div>
+          <FormField label="Address"
+            counter={<CharacterCounter current={watchAddress?.length || 0} max={CHAR_LIMITS.tagline} />}>
+            <textarea
+              {...register('contactAddress', optionalMaxLength(CHAR_LIMITS.tagline))}
+              maxLength={CHAR_LIMITS.tagline}
+              rows={2}
+              className={`${inputClass()} resize-y`}
+              style={{ fontFamily: 'system-ui' }}
+            />
+          </FormField>
+          <FormField label="Business Hours"
+            counter={<CharacterCounter current={watchHours?.length || 0} max={CHAR_LIMITS.tagline} />}>
+            <input
+              {...register('businessHours', optionalMaxLength(CHAR_LIMITS.tagline))}
+              maxLength={CHAR_LIMITS.tagline}
+              className={inputClass()}
+              style={{ fontFamily: 'system-ui' }}
+            />
+          </FormField>
         </div>
       )}
 
       {/* Footer Tab */}
       {activeTab === 'footer' && (
         <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Footer CTA Heading</label>
+          <FormField label="Footer CTA Heading"
+            counter={<CharacterCounter current={watchFooterCta?.length || 0} max={CHAR_LIMITS.tagline} />}>
             <input
-              {...register('footerCta')}
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300"
+              {...register('footerCta', optionalMaxLength(CHAR_LIMITS.tagline))}
+              maxLength={CHAR_LIMITS.tagline}
+              className={inputClass()}
               style={{ fontFamily: 'system-ui' }}
               placeholder="e.g. Ready to start your project?"
             />
-            <p className="text-xs text-gray-400 mt-1" style={{ fontFamily: 'system-ui' }}>The call-to-action heading displayed in the site footer.</p>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Footer Description</label>
+            <p className="text-xs text-gray-400 mt-1 italic" style={{ fontFamily: 'system-ui' }}>The call-to-action heading displayed in the site footer.</p>
+          </FormField>
+          <FormField label="Footer Description"
+            counter={<CharacterCounter current={watchFooterDesc?.length || 0} max={CHAR_LIMITS.longText} />}>
             <textarea
-              {...register('footerDescription')}
+              {...register('footerDescription', optionalMaxLength(CHAR_LIMITS.longText))}
+              maxLength={CHAR_LIMITS.longText}
               rows={4}
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300 resize-y"
+              className={`${inputClass()} resize-y`}
               style={{ fontFamily: 'system-ui' }}
               placeholder="A short description or tagline shown in the footer..."
             />
-            <p className="text-xs text-gray-400 mt-1" style={{ fontFamily: 'system-ui' }}>Supporting text displayed below the footer CTA heading.</p>
-          </div>
+            <p className="text-xs text-gray-400 mt-1 italic" style={{ fontFamily: 'system-ui' }}>Supporting text displayed below the footer CTA heading.</p>
+          </FormField>
         </div>
       )}
 
       {/* SEO Tab */}
       {activeTab === 'seo' && (
         <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Site Title</label>
-            <input {...register('siteTitle')} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300" style={{ fontFamily: 'system-ui' }} />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Site Description</label>
-            <textarea {...register('siteDescription')} rows={3} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300 resize-y" style={{ fontFamily: 'system-ui' }} />
-          </div>
+          <FormField label="Site Title" error={errors.siteTitle?.message} helpText={HELP_TEXT.metaTitle}
+            counter={<CharacterCounter current={watchSiteTitle?.length || 0} max={CHAR_LIMITS.metaTitle} />}>
+            <input
+              {...register('siteTitle', optionalMaxLength(CHAR_LIMITS.metaTitle))}
+              maxLength={CHAR_LIMITS.metaTitle}
+              className={inputClass(!!errors.siteTitle)}
+              style={{ fontFamily: 'system-ui' }}
+            />
+          </FormField>
+          <FormField label="Site Description" error={errors.siteDescription?.message} helpText={HELP_TEXT.metaDescription}
+            counter={<CharacterCounter current={watchSiteDesc?.length || 0} max={CHAR_LIMITS.metaDescription} />}>
+            <textarea
+              {...register('siteDescription', optionalMaxLength(CHAR_LIMITS.metaDescription))}
+              maxLength={CHAR_LIMITS.metaDescription}
+              rows={3}
+              className={`${inputClass(!!errors.siteDescription)} resize-y`}
+              style={{ fontFamily: 'system-ui' }}
+            />
+          </FormField>
 
           <div className="pt-2 border-t border-gray-100">
             <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4" style={{ fontFamily: 'system-ui' }}>Social Share Images</h3>
             <div className="grid grid-cols-2 gap-6">
-              <ImageUploadField
-                label="OG Image"
-                value={ogImage}
-                onChange={setOgImage}
-                folder="seo"
-              />
+              <div>
+                <ImageUploadField
+                  label="OG Image"
+                  value={ogImage}
+                  onChange={setOgImage}
+                  folder="seo"
+                />
+                <p className="text-gray-400 text-xs mt-1 italic" style={{ fontFamily: 'system-ui' }}>{HELP_TEXT.ogImage}</p>
+              </div>
               <ImageUploadField
                 label="Twitter Image"
                 value={twitterImage}
@@ -288,18 +423,33 @@ export default function SettingsPage() {
       {/* Social Tab */}
       {activeTab === 'social' && (
         <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">LinkedIn URL</label>
-            <input {...register('socialLinkedIn')} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300" style={{ fontFamily: 'system-ui' }} />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Facebook URL</label>
-            <input {...register('socialFacebook')} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300" style={{ fontFamily: 'system-ui' }} />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Instagram URL</label>
-            <input {...register('socialInstagram')} className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300" style={{ fontFamily: 'system-ui' }} />
-          </div>
+          <FormField label="LinkedIn URL" error={errors.socialLinkedIn?.message}
+            counter={<CharacterCounter current={watchLinkedIn?.length || 0} max={CHAR_LIMITS.url} />}>
+            <input
+              {...register('socialLinkedIn', urlRules())}
+              maxLength={CHAR_LIMITS.url}
+              className={inputClass(!!errors.socialLinkedIn)}
+              style={{ fontFamily: 'system-ui' }}
+            />
+          </FormField>
+          <FormField label="Facebook URL" error={errors.socialFacebook?.message}
+            counter={<CharacterCounter current={watchFacebook?.length || 0} max={CHAR_LIMITS.url} />}>
+            <input
+              {...register('socialFacebook', urlRules())}
+              maxLength={CHAR_LIMITS.url}
+              className={inputClass(!!errors.socialFacebook)}
+              style={{ fontFamily: 'system-ui' }}
+            />
+          </FormField>
+          <FormField label="Instagram URL" error={errors.socialInstagram?.message}
+            counter={<CharacterCounter current={watchInstagram?.length || 0} max={CHAR_LIMITS.url} />}>
+            <input
+              {...register('socialInstagram', urlRules())}
+              maxLength={CHAR_LIMITS.url}
+              className={inputClass(!!errors.socialInstagram)}
+              style={{ fontFamily: 'system-ui' }}
+            />
+          </FormField>
         </div>
       )}
 
@@ -336,6 +486,7 @@ export default function SettingsPage() {
                   type="text"
                   value={link.label}
                   onChange={(e) => updateNavLink(index, 'label', e.target.value)}
+                  maxLength={CHAR_LIMITS.keyword}
                   placeholder="Label"
                   className="w-32 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300"
                   style={{ fontFamily: 'system-ui' }}
@@ -344,6 +495,7 @@ export default function SettingsPage() {
                   type="text"
                   value={link.href}
                   onChange={(e) => updateNavLink(index, 'href', e.target.value)}
+                  maxLength={CHAR_LIMITS.url}
                   placeholder="/path"
                   className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300"
                   style={{ fontFamily: 'system-ui' }}

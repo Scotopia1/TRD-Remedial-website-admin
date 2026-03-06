@@ -1,8 +1,9 @@
 'use client';
 
 import { useRef, useState, useCallback } from 'react';
-import { Upload, X, ChevronUp, ChevronDown, Loader2, ImageIcon, Plus } from 'lucide-react';
+import { Upload, X, ChevronUp, ChevronDown, Loader2, ImageIcon, Plus, FolderOpen } from 'lucide-react';
 import { toast } from 'sonner';
+import { MediaLibraryPicker } from './MediaLibraryPicker';
 
 interface ImageItem {
   url: string;
@@ -28,6 +29,7 @@ export function MultiImageUploadField({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [showMediaPicker, setShowMediaPicker] = useState(false);
 
   const uploadFile = useCallback(
     async (file: File) => {
@@ -204,36 +206,56 @@ export function MultiImageUploadField({
 
       {/* Add zone */}
       {canAddMore && (
-        <div
-          onDrop={handleDrop}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onClick={() => !uploading && fileInputRef.current?.click()}
-          className={`rounded-xl border-2 border-dashed transition-all cursor-pointer flex items-center justify-center gap-3 py-5 ${
-            isDragOver
-              ? 'border-blue-400 bg-blue-50'
-              : 'border-gray-200 bg-gray-50 hover:border-gray-300 hover:bg-gray-100'
-          }`}
-        >
-          {uploading ? (
-            <div className="flex items-center gap-2 text-gray-500">
-              <Loader2 size={16} className="animate-spin" />
-              <span className="text-sm" style={{ fontFamily: 'system-ui' }}>Uploading...</span>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2 text-gray-400">
-              {isDragOver ? (
-                <Upload size={16} className="text-blue-400" />
-              ) : (
-                <Plus size={16} />
-              )}
-              <span className="text-sm" style={{ fontFamily: 'system-ui' }}>
-                {isDragOver ? 'Drop images here' : images.length === 0 ? 'Drag & drop or click to add images' : 'Add more images'}
-              </span>
-            </div>
-          )}
+        <div className="space-y-2">
+          <div
+            onDrop={handleDrop}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onClick={() => !uploading && fileInputRef.current?.click()}
+            className={`rounded-xl border-2 border-dashed transition-all cursor-pointer flex items-center justify-center gap-3 py-5 ${
+              isDragOver
+                ? 'border-blue-400 bg-blue-50'
+                : 'border-gray-200 bg-gray-50 hover:border-gray-300 hover:bg-gray-100'
+            }`}
+          >
+            {uploading ? (
+              <div className="flex items-center gap-2 text-gray-500">
+                <Loader2 size={16} className="animate-spin" />
+                <span className="text-sm" style={{ fontFamily: 'system-ui' }}>Uploading...</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 text-gray-400">
+                {isDragOver ? (
+                  <Upload size={16} className="text-blue-400" />
+                ) : (
+                  <Plus size={16} />
+                )}
+                <span className="text-sm" style={{ fontFamily: 'system-ui' }}>
+                  {isDragOver ? 'Drop images here' : images.length === 0 ? 'Drag & drop or click to add images' : 'Add more images'}
+                </span>
+              </div>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowMediaPicker(true)}
+            className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 transition-colors"
+            style={{ fontFamily: 'system-ui' }}
+          >
+            <FolderOpen size={12} />
+            Browse Media Library
+          </button>
         </div>
       )}
+
+      {/* Media Library Picker Modal */}
+      <MediaLibraryPicker
+        open={showMediaPicker}
+        onSelect={(media) => {
+          onChange([...images, { url: media.url, alt: media.alt || '', caption: '' }]);
+        }}
+        onClose={() => setShowMediaPicker(false)}
+      />
     </div>
   );
 }

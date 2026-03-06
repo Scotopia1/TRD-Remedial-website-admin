@@ -146,6 +146,8 @@ export const mediaSchema = z.object({
   size: z.number().int().positive(),
   alt: z.string().optional(),
   caption: z.string().optional(),
+  folder: z.string().nullable().optional(),
+  tags: z.array(z.string()).optional(),
 })
 
 export const mediaUpdateSchema = mediaSchema.partial()

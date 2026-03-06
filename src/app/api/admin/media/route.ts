@@ -11,13 +11,24 @@ export async function GET(request: NextRequest) {
     const mimeType = searchParams.get('mimeType')
     const limit = searchParams.get('limit')
     const offset = searchParams.get('offset')
+    const folder = searchParams.get('folder')
+
+    // Build where clause
+    const where: Record<string, unknown> = {}
+
+    if (mimeType) {
+      where.mimeType = { startsWith: mimeType }
+    }
+
+    // Folder filtering: 'unfiled' = null folder, any other value = exact match
+    if (folder === 'unfiled') {
+      where.folder = null
+    } else if (folder) {
+      where.folder = folder
+    }
 
     const media = await prisma.media.findMany({
-      where: mimeType ? {
-        mimeType: {
-          startsWith: mimeType // e.g., 'image/' for all images
-        }
-      } : undefined,
+      where: Object.keys(where).length > 0 ? where : undefined,
       orderBy: {
         createdAt: 'desc'
       },
@@ -27,11 +38,7 @@ export async function GET(request: NextRequest) {
 
     // Get total count for pagination
     const total = await prisma.media.count({
-      where: mimeType ? {
-        mimeType: {
-          startsWith: mimeType
-        }
-      } : undefined
+      where: Object.keys(where).length > 0 ? where : undefined
     })
 
     return successResponse({

@@ -6,6 +6,14 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { Save, ArrowLeft } from 'lucide-react';
 import { ImageUploadField } from '@/components/admin/ImageUploadField';
+import { CharacterCounter } from '@/components/admin/CharacterCounter';
+import { FormField } from '@/components/admin/FormField';
+import { FormErrorSummary } from '@/components/admin/FormErrorSummary';
+import {
+  CHAR_LIMITS,
+  requiredMaxLength,
+  inputClass,
+} from '@/lib/form-validation';
 
 interface ValueFormData {
   title: string;
@@ -18,8 +26,9 @@ export default function NewValuePage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [image, setImage] = useState('');
+  const [showErrors, setShowErrors] = useState(false);
 
-  const { register, handleSubmit, formState: { errors } } = useForm<ValueFormData>({
+  const { register, handleSubmit, watch, formState: { errors } } = useForm<ValueFormData>({
     defaultValues: {
       title: '',
       description: '',
@@ -28,7 +37,11 @@ export default function NewValuePage() {
     },
   });
 
+  const watchTitle = watch('title', '');
+  const watchDescription = watch('description', '');
+
   const onSubmit = async (data: ValueFormData) => {
+    setShowErrors(false);
     setLoading(true);
     try {
       const res = await fetch('/api/admin/values', {
@@ -39,6 +52,7 @@ export default function NewValuePage() {
       const result = await res.json();
       if (result.success) {
         toast.success('Value created!');
+        router.refresh();
         router.push('/admin/values');
       } else {
         toast.error(result.error || 'Failed to create value');
@@ -50,8 +64,14 @@ export default function NewValuePage() {
     }
   };
 
+  const onError = () => {
+    setShowErrors(true);
+  };
+
+  const errorCount = Object.keys(errors).length;
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 max-w-2xl">
+    <form onSubmit={handleSubmit(onSubmit, onError)} className="space-y-6 max-w-2xl">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button
@@ -75,28 +95,31 @@ export default function NewValuePage() {
         </button>
       </div>
 
+      <FormErrorSummary errorCount={errorCount} show={showErrors} />
+
       <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+        <FormField label="Title" required error={errors.title?.message}
+          counter={<CharacterCounter current={watchTitle?.length || 0} max={CHAR_LIMITS.title} />}>
           <input
-            {...register('title')}
-            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300"
+            {...register('title', requiredMaxLength(CHAR_LIMITS.title))}
+            maxLength={CHAR_LIMITS.title}
+            className={inputClass(!!errors.title)}
             style={{ fontFamily: 'system-ui' }}
             placeholder="e.g. Integrity"
           />
-          {errors.title && <p className="text-xs text-red-500 mt-1">{errors.title.message}</p>}
-        </div>
+        </FormField>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+        <FormField label="Description" required error={errors.description?.message}
+          counter={<CharacterCounter current={watchDescription?.length || 0} max={CHAR_LIMITS.longText} />}>
           <textarea
-            {...register('description')}
+            {...register('description', requiredMaxLength(CHAR_LIMITS.longText))}
+            maxLength={CHAR_LIMITS.longText}
             rows={3}
-            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300 resize-y"
+            className={`${inputClass(!!errors.description)} resize-y`}
             style={{ fontFamily: 'system-ui' }}
             placeholder="Describe this company value..."
           />
-        </div>
+        </FormField>
 
         <ImageUploadField
           label="Image"
@@ -111,7 +134,7 @@ export default function NewValuePage() {
             <input
               type="number"
               {...register('order', { valueAsNumber: true })}
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300"
+              className={inputClass()}
               style={{ fontFamily: 'system-ui' }}
             />
           </div>

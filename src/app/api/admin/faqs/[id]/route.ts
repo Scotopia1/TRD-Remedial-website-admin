@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { successResponse, errorResponse, handleApiError } from '@/lib/api-utils';
+import { triggerRevalidation } from '@/lib/revalidate';
 
 type RouteContext = {
   params: Promise<{ id: string }>;
@@ -33,6 +34,8 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       data: body,
     });
 
+    triggerRevalidation('faqs');
+
     return successResponse(faq);
   } catch (error) {
     return handleApiError(error);
@@ -45,6 +48,8 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
     const { id } = await context.params;
 
     await prisma.fAQ.delete({ where: { id } });
+
+    triggerRevalidation('faqs');
 
     return successResponse({ message: 'FAQ deleted successfully' });
   } catch (error) {
