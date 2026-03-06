@@ -7,11 +7,12 @@ import { contactSubmissionSchema } from '@/lib/validations'
 import { sendContactConfirmation, sendAdminNotification } from '@/lib/email'
 import { ZodError } from 'zod'
 
-// CORS headers allowing POST from the website
+// CORS headers allowing POST from any origin (consistent with other public routes).
+// vercel.json also applies Access-Control-Allow-Origin: * at the edge level for
+// all /api/public/* routes, so we must not set a conflicting domain-specific origin
+// here -- duplicate origins cause browsers to reject the request.
 const CONTACT_CORS_HEADERS = {
-  'Access-Control-Allow-Origin': process.env.NODE_ENV === 'production'
-    ? 'https://www.trdremedial.com.au'
-    : '*',
+  'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type',
   'Access-Control-Max-Age': '86400',
