@@ -47,6 +47,7 @@
     "next-transition-router": "^0.2.11",
     "next-view-transitions": "^0.3.5",
     "nodemailer": "^8.0.1",
+    "@types/nodemailer": "^7.0.11",
     "pg": "^8.16.3",
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
@@ -69,7 +70,6 @@
     "@next/bundle-analyzer": "^16.1.4",
     "@playwright/test": "^1.56.1",
     "@types/bcryptjs": "^2.4.6",
-    "@types/nodemailer": "^7.0.11",
     "prisma": "^6.19.0",
     "puppeteer": "^24.26.1",
     "tsx": "^4.21.0"
